@@ -1,1 +1,1 @@
-# apb-uart-uvm-env
+This repo contains the UVM environment for APB based UART.
