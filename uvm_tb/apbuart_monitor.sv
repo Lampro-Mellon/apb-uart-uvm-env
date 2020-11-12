@@ -49,12 +49,11 @@ class apbuart_monitor extends uvm_monitor;
     	count = 0;
     	forever 
      	begin
-       		@(posedge vif.MONITOR.PCLK);
+          repeat(2)@(posedge vif.MONITOR.PCLK);
        		wait(`MON_IF.PENABLE);
-        
        		if(`MON_IF.PWRITE == 1 && (`MON_IF.PADDR == 0 || `MON_IF.PADDR == 1 || `MON_IF.PADDR == 2 || `MON_IF.PADDR == 3)) 
         	begin
-            	trans_collected.PWRITE 		= `MON_IF.PWRITE;
+            		trans_collected.PWRITE 		= `MON_IF.PWRITE;
         		trans_collected.PADDR 		= `MON_IF.PADDR;
         		trans_collected.PWDATA		= `MON_IF.PWDATA;
             	@(posedge vif.MONITOR.PCLK);
@@ -66,25 +65,26 @@ class apbuart_monitor extends uvm_monitor;
             	wait( `MON_IF.PREADY);
           		trans_collected.PADDR 		= `MON_IF.PADDR;
         		trans_collected.PRDATA 		= `MON_IF.PRDATA;
-          		repeat(2)@(posedge vif.MONITOR.PCLK);
+                wait(!`MON_IF.PREADY);
       		end
    			else if(`MON_IF.PADDR == 4) 
         	begin
           		trans_collected.PWDATA  	= `MON_IF.PWDATA;
-				trans_collected.PWRITE  	= `MON_IF.PWRITE;  
+			trans_collected.PWRITE  	= `MON_IF.PWRITE;  
           		trans_collected.PADDR 		= `MON_IF.PADDR;
           		if(count == 1'b0)
-          			begin
-          		    	wait(!`MON_IF.Tx);
+          		begin
+          			wait(!`MON_IF.Tx);
           		    	@(posedge vif.MONITOR.PCLK);
           		    	count 				=  1'b1;
-          		  	end  
+          		  end  
           		else 
           		  begin
           		    repeat(5208)@(posedge vif.MONITOR.PCLK);
           		  end
           		trans_collected.Tx          = `MON_IF.Tx;
           		trans_collected.PREADY      = `MON_IF.PREADY;
+              		wait(!`MON_IF.PREADY);
       		end  
  
       		else if(`MON_IF.PADDR == 5) 
@@ -95,16 +95,15 @@ class apbuart_monitor extends uvm_monitor;
       		    	wait(`MON_IF.PREADY || `MON_IF.PSLVERR);
       		    	if(`MON_IF.PSLVERR) 
       		      	begin
-      		        	trans_collected.PSLVERR 	= `MON_IF.PSLVERR;
+      		        	trans_collected.PSLVERR = `MON_IF.PSLVERR;
       		        	wait(`MON_IF.PREADY);
       		      	end
       		    	else
       		        	trans_collected.PSLVERR = `MON_IF.PSLVERR;
 
-					trans_collected.PRDATA 		= `MON_IF.PRDATA;
-					trans_collected.PREADY 		= `MON_IF.PREADY;	  
-					wait(!`MON_IF.PREADY);
-					$display("Leave");
+			trans_collected.PRDATA 		= `MON_IF.PRDATA;
+			trans_collected.PREADY 		= `MON_IF.PREADY;	  
+			wait(!`MON_IF.PREADY);
       		    end
        
       		item_collected_port.write(trans_collected); // It sends the transaction non-blocking and it sends to all connected export 
