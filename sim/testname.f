@@ -1,0 +1,6 @@
+apbuart_config_test
+apbuart_data_compare_test
+apbuart_parity_error_test
+apbuart_frame_error_test
+apbuart_free_error_test
+apbuart_rec_reg_test
