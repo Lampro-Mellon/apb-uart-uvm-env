@@ -20,7 +20,7 @@ class apbuart_rec_reg_test extends apbuart_base_test;
         apbuart_sq1.start(env_sq.apbuart_agnt.sequencer);
       	apbuart_sq2.start(env_sq.apbuart_agnt.sequencer);
         phase.drop_objection(.obj(this));
-        phase.phase_done.set_drain_time(this, 7500*16);
+	phase.phase_done.set_drain_time(this, 75000*8);
     endtask
 
 endclass
