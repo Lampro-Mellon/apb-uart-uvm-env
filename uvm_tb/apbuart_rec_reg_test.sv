@@ -5,7 +5,7 @@ class apbuart_rec_reg_test extends apbuart_base_test;
     config_apbuart  apbuart_sq1; // all configuration read sequence 
     rec_reg_test 	apbuart_sq2;
     
-	function new (string name, uvm_component parent= null);
+    function new (string name, uvm_component parent= null);
       	super.new(name, parent);
     endfunction
 
