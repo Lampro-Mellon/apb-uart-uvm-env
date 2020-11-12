@@ -77,9 +77,6 @@ class apbuart_driver extends uvm_driver #(apbuart_transaction);
   	  	  			`DRIV_IF.RX 	<= req.rec_temp[bcount];
   	  	  		bcount++;
   	  	  	end
-			wait(`DRIV_IF.PREADY);		  
-			`DRIV_IF.PSELx		<= 0;
-			`DRIV_IF.PENABLE	<= 0;	  
   	  	end
   	endtask
 endclass
