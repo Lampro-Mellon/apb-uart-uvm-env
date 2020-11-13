@@ -2,23 +2,19 @@ class apbuart_parity_error_test extends apbuart_base_test;
     `uvm_component_utils (apbuart_parity_error_test)
 
     //uart_env env_sq;
-    config_apbuart  apbuart_sq1; // all configuration for write and read configuration 
-    pe_test 		apbuart_sq2;
-
+    apbuart_parityError_seq  apbuart_sq; // all configuration for write and read configuration
     function new (string name, uvm_component parent= null);
       	super.new(name, parent);
     endfunction
 
     virtual function void build_phase (uvm_phase phase);
       	super.build_phase(phase);
-      	apbuart_sq1 = config_apbuart::type_id::create("apbuart_sq1",this);
-      	apbuart_sq2 = pe_test::type_id::create("apbuart_sq2",this);
+      	apbuart_sq1 = apbuart_parityError_seq::type_id::create("apbuart_sq1",this);
     endfunction
 
     task run_phase(uvm_phase phase);
         phase.raise_objection (.obj(this));
-        apbuart_sq1.start(env_sq.apbuart_agnt.sequencer);
-      	apbuart_sq2.start(env_sq.apbuart_agnt.sequencer);
+        apbuart_sq.start(env_sq.v_sqr);
         phase.drop_objection(.obj(this));
         phase.phase_done.set_drain_time(this, 20);
     endtask
