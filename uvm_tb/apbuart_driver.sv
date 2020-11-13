@@ -1,7 +1,7 @@
 `define DRIV_IF vif.DRIVER.driver_cb
 
 class apbuart_driver extends uvm_driver #(apbuart_transaction);
-//	logic [5:0]		bcount = 0;
+	logic [5:0]		bcount = 0;
   
 	virtual apbuart_if	vif;
   	`uvm_component_utils(apbuart_driver)
