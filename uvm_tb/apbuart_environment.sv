@@ -28,7 +28,7 @@ class apbuart_env extends uvm_env;
     //  connect_phase - connecting monitor and scoreboard port
     // ------------------------------------------------------------
     function void connect_phase(uvm_phase phase);
-    	apbuart_agnt.monitor.item_collected_port.connect(apbuart_scb.item_collected_export);
+    	apbuart_agnt.monitor.item_collected_port_mon.connect(apbuart_scb.item_collected_export_mon);
 	apbuart_agnt.driver.item_collected_port_drv.connect(apbuart_scb.item_collected_export_drv);
     endfunction : connect_phase
 
