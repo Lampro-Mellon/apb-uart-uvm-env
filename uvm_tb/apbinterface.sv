@@ -11,8 +11,6 @@ interface apbuart_if (input PCLK, input PRESETn);
     logic [32-1:0]  PWDATA;
     logic [32-1:0]  PADDR;
     logic [32-1:0]  PRDATA;
-	logic [47:0]	rec_temp;
-    bit   [1:0] 	fpn_flag;
 
   //clocking blocks
   clocking driver_cb @(posedge PCLK);
