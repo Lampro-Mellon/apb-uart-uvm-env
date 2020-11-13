@@ -104,7 +104,7 @@ class apbuart_monitor extends uvm_monitor;
 					wait(!`MON_IF.PREADY);
       		    end
        
-      		item_collected_port.write(trans_collected); // It sends the transaction non-blocking and it sends to all connected export 
+      		item_collected_port_mon.write(trans_collected); // It sends the transaction non-blocking and it sends to all connected export 
      	end
   	endtask : run_phase
 endclass
