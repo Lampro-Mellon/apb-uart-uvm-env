@@ -39,7 +39,7 @@ class uart_monitor extends uvm_monitor;
   	    	`uvm_fatal("NOVIF",{"virtual interface must be set for: ",get_full_name(),".vif"});
   	endfunction: build_phase
 	
-  	logic count;
+	logic [6:0] count;
   
   	//------------------------------------------------------------------------------------
   	// run_phase - convert the signal level activity to transaction level.
@@ -50,22 +50,20 @@ class uart_monitor extends uvm_monitor;
     	forever 
      	begin
           repeat(2)@(posedge vif.MONITOR.PCLK);
-
-          		if(count == 1'b0)
-          		begin
+		repeat(48) begin ///////////////////// check if it is to be 48 or 47 
+			if(count == 1'b0) begin
           			wait(!`MON_IF.Tx);
           		    	@(posedge vif.MONITOR.PCLK);
-          		    	count 				=  1'b1;
-          		  end  
-          		else 
-          		  begin
-          		    repeat(5208)@(posedge vif.MONITOR.PCLK);
-          		  end
-          		trans_collected.Tx          = `MON_IF.Tx;
-          		trans_collected.PREADY      = `MON_IF.PREADY;
-              		wait(!`MON_IF.PREADY);
-
-      		item_collected_port.write(trans_collected); // It sends the transaction non-blocking and it sends to all connected export 
+				trans_collected.transmitter_reg[count]          = `MON_IF.Tx;
+          		    	count=count+1;
+          		end  
+          		else begin
+          		    	repeat(5208)@(posedge vif.MONITOR.PCLK);
+				trans_collected.transmitter_reg[count]          = `MON_IF.Tx;
+				count=count+1;				  
+			end
+		end
+      	item_collected_port.write(trans_collected); // It sends the transaction non-blocking and it sends to all connected export 
      	end
   	endtask : run_phase
 endclass
