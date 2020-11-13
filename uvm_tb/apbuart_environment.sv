@@ -6,13 +6,16 @@ class apbuart_env extends uvm_env;
     //  agent and scoreboard instance
     // ---------------------------------------
     apbuart_agent       apbuart_agnt;
+    uart_agent          uart_agnt;
     apbuart_scoreboard  apbuart_scb;
+    vsequencer          v_sqr;
+    
 
     // --------------------------------------- 
     //  Calling the constructor
     // ---------------------------------------
     function new(string name, uvm_component parent);
-    	super.new(name, parent);
+        super.new(name, parent);
     endfunction : new
 
     // --------------------------------------------------------------
@@ -20,15 +23,24 @@ class apbuart_env extends uvm_env;
     // --------------------------------------------------------------
     function void build_phase(uvm_phase phase);
       	super.build_phase(phase);
-      	apbuart_agnt  = apbuart_agent::type_id::create("apbuart_agnt", this);
+        apbuart_agnt  = apbuart_agent::type_id::create("apbuart_agnt", this);
+        uart_agnt  = apbuart_agent::type_id::create("uart_agnt", this); 
       	apbuart_scb   = apbuart_scoreboard::type_id::create("apbuart_scb", this);
+        v_sqr  = vsequencer::type_id::create("v_sqr",this);
     endfunction : build_phase
 
     // ------------------------------------------------------------
     //  connect_phase - connecting monitor and scoreboard port
     // ------------------------------------------------------------
     function void connect_phase(uvm_phase phase);
-    	apbuart_agnt.monitor.item_collected_port.connect(apbuart_scb.item_collected_export);
+        super.connect_phase(phase);
+        apbuart_agnt.monitor.item_collected_port.connect(apbuart_scb.item_collected_export);
+        uart_agnt.driver.item_collected_port.connect(apbuart_scb.item_collected_export_drv);
+        // Another Monitor Port is also Required 
+        //uart_agnt.monitor.item_collected_export.connect(apbuart_scb.item_collected_export_mon2)
+         
+        uvm_config_db#(apbuart_sequencer)::set(this,"*","apb_sqr",apbuart_agnt.sequencer);
+        uvm_config_db#(uart_sequencer)::set(this,"*","uart_sqr",uart_agnt.sequencer); 
     endfunction : connect_phase
 
 endclass : apbuart_env
