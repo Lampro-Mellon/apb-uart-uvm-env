@@ -9,7 +9,7 @@ class apbuart_parity_error_test extends apbuart_base_test;
 
     virtual function void build_phase (uvm_phase phase);
       	super.build_phase(phase);
-      	apbuart_sq1 = apbuart_parityError_seq::type_id::create("apbuart_sq1",this);
+      	apbuart_sq = apbuart_parityError_seq::type_id::create("apbuart_sq1",this);
     endfunction
 
     task run_phase(uvm_phase phase);
