@@ -1,11 +1,24 @@
+// -----------------------------------------------------------------------------------
+//  Using the `uvm_analysis_imp_decl() macro allows the construction of two analysis 
+//  implementation ports with corresponding, uniquely named, write methods
+// -----------------------------------------------------------------------------------
+
+`uvm_analysis_imp_decl(_monapb)
+`uvm_analysis_imp_decl(_monuart) 
+`uvm_analysis_imp_decl(_drvapb)
+`uvm_analysis_imp_decl(_drvuart) 
+
 class apbuart_scoreboard extends uvm_scoreboard;
 	`uvm_component_utils(apbuart_scoreboard)
   
   	// ---------------------------------------
   	//  declaring pkt_qu to store the pkt's 
-  	//  recived from monitor
+  	//  recived from monitor and driver
   	// ---------------------------------------
-  	apbuart_transaction pkt_qu[$];
+  	apbuart_transaction pkt_qu_monapb[$];
+	uart_transaction 	pkt_qu_monuart[$];
+  	apbuart_transaction pkt_qu_drvapb[$];
+	uart_transaction 	pkt_qu_drvuart[$];  
 	
   	// ----------------------------------------------
   	//  scoreboad CONFIGURATION ADDRESS memory map 
@@ -32,9 +45,10 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	//  port to recive packets from monitor first argument is transation type and 
   	//  other is defining which subscriber is attached
   	// ------------------------------------------------------------------------------
-  	//uvm_analysis_imp#(uart_transaction, uart_scoreboard) item_collected_export;
- 	uvm_analysis_imp#(apbuart_transaction, apbuart_scoreboard) item_collected_export;
- 
+    uvm_analysis_imp_monapb 	#(apbuart_transaction, apbuart_scoreboard)	item_collected_export_monapb;
+	uvm_analysis_imp_monuart 	#(uart_transaction, apbuart_scoreboard) 	item_collected_export_monuart;
+  	uvm_analysis_imp_drvapb  	#(apbuart_transaction, apbuart_scoreboard) 	item_collected_export_drvapb;
+	uvm_analysis_imp_drvuart  	#(uart_transaction, apbuart_scoreboard) 	item_collected_export_drvuart;  
 
   	//---------------------------------------
   	// new - constructor
@@ -48,190 +62,224 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	// ---------------------------------------
   	function void build_phase(uvm_phase phase);
   		super.build_phase(phase);
-  		item_collected_export = new("item_collected_export", this);
+      	item_collected_export_monapb 	= new("item_collected_export_monapb", this);
+		item_collected_export_monuart 	= new("item_collected_export_monuart", this);
+      	item_collected_export_drvmon 	= new("item_collected_export_drvmon", this);
+		item_collected_export_drvuart 	= new("item_collected_export_drvuart", this);  
   	endfunction: build_phase
   
-  	// ---------------------------------------------
-  	//  write task - recives the pkt from monitor 
+  	// --------------------------------------------------
+  	//  write task - recives the pkt from monitor (APB) 
   	//  and pushes into queue
-  	// ---------------------------------------------
-  	virtual function void write(apbuart_transaction pkt);
-  		pkt_qu.push_back(pkt); // Pushing the transactions from the end of queue
-  	endfunction : write
+  	// --------------------------------------------------
+  	virtual function void write_monapb(apbuart_transaction pkt);
+  		pkt_qu_monapb.push_back(pkt); // Pushing the transactions from the end of queue
+  	endfunction : write_monapb
+  
+	// --------------------------------------------------
+  	//  write task - recives the pkt from monitor (UART) 
+  	//  and pushes into queue
+  	// --------------------------------------------------
+  	virtual function void write_monuart(apbuart_transaction pkt);
+  		pkt_qu_monuart.push_back(pkt); // Pushing the transactions from the end of queue
+  	endfunction : write_monuart
+  
+  	// ----------------------------------------------
+  	//  write task - recives the pkt from driver(apb) 
+  	//  and pushes into queue
+  	// ----------------------------------------------
+  	virtual function void write_drvapb(apbuart_transaction pkt);
+  		pkt_qu_drvapb.push_back(pkt); // Pushing the transactions from the end of queue
+  	endfunction : write_drvapb
+
+	// ------------------------------------------------
+  	//  write task - recives the pkt from driver (Uart)
+  	//  and pushes into queue
+  	// ------------------------------------------------
+  	virtual function void write_drvuart(uart_transaction pkt);
+  		pkt_qu_drvuart.push_back(pkt); // Pushing the transactions from the end of queue
+  	endfunction : write_drvuart  
 
   	// --------------------------------------------------------------------------------------
   	//  run_phase - compare's the read data with the expected data(stored in register)
   	//  Transmitter register will be updated on value of config address=4 and Tx_detect = 1
   	// --------------------------------------------------------------------------------------
   	virtual task run_phase(uvm_phase phase);
-    	apbuart_transaction apbuart_pkt;
+    	apbuart_transaction apb_pkt_mon;
+		uart_transaction 	uart_pkt_mon;
+      	apbuart_transaction apb_pkt_drv;
+		uart_transaction 	uart_pkt_drv;
     
     	forever 
     	begin
-      		wait(pkt_qu.size() > 0);	    	// checking the fifo that it contains any valid entry
-      		apbuart_pkt = pkt_qu.pop_front(); 	// getting the entry from the start of fifo
-      		receive_ref_model (apbuart_pkt); 
-      		compare_receive (apbuart_pkt) ;
-      		trasmitter_ref_model (apbuart_pkt) ;
-      		compare_config (apbuart_pkt) ;
-      		compare_transmission (apbuart_pkt) ;
+          	wait(pkt_qu_drvapb.size() > 0);	    			// checking the fifo that it contains any valid entry from driver
+      		apb_pkt_drv = pkt_qu_drvapb.pop_front(); 		// getting the entry from the start of fifo
+          	if(apb_pkt_drv.PADDR == `baud_config_addr || apb_pkt_drv.PADDR == `frame_config_addr || apb_pkt_drv.PADDR == `parity_config_addr || apb_pkt_drv.PADDR == `stop_bits_config_addr)
+			begin
+				wait(pkt_qu_monapb.size() > 0);	    		// checking the fifo that it contains any valid entry from monitor apb
+      			apb_pkt_mon = pkt_qu_monapb.pop_front(); 	// getting the entry from the start of fifo
+          		compare_config (apb_pkt_mon) ;
+			end
+			else if (apb_pkt_drv.PADDR == `trans_data_addr)
+			begin
+				trasmitter_ref_model (apb_pkt_drv);
+				wait(pkt_qu_monuart.size() > 0);	    	// checking the fifo that it contains any valid entry from monitor apb
+				uart_pkt_mon = pkt_qu_monuart.pop_front(); 	// getting the entry from the start of fifo
+				compare_transmission (uart_pkt_mon) ;
+			end
+			else if (apb_pkt_drv.PADDR == `trans_data_addr)
+			begin
+				wait(pkt_qu_drvuart.size() > 0);	    	// checking the fifo that it contains any valid entry from driver
+      			uart_pkt_drv = pkt_qu_drvuart.pop_front(); 	// getting the entry from the start of fifo
+				receive_ref_model(uart_pkt_drv);
+				wait(pkt_qu_monapb.size() > 0);	    		// checking the fifo that it contains any valid entry from monitor apb
+				apb_pkt_mon = pkt_qu_monapb.pop_front(); 	// getting the entry from the start of fifo
+				compare_receive (apb_pkt_mon,uart_pkt_drv);
+			end
     	end
   	endtask : run_phase
   
-  	function trasmitter_ref_model (apbuart_transaction uart_pkt);
-  		if(uart_pkt.PWRITE && uart_pkt.PADDR == `trans_data_addr && tx_count <= 48) // checking if transmission occurs
-  	    begin
-  	      	if(tx_count == 0)
-  	      	begin
-  	      	  	checker_transmt_reg[0]      = 1'b0;
-  	      	  	checker_transmt_reg[8:1]    = uart_pkt.PWDATA[7:0];
-  	      	  	checker_transmt_reg[9]      = ^(uart_pkt.PWDATA[7:0]); 
-  	      	  	checker_transmt_reg[11:10]  = 3; 
+  	function trasmitter_ref_model (apbuart_transaction apb_pkt);
+  	    checker_transmt_reg[0]      = 1'b0;
+  	    checker_transmt_reg[8:1]    = apb_pkt.PWDATA[7:0];
+  	    checker_transmt_reg[9]      = ^(apb_pkt.PWDATA[7:0]); 
+  	    checker_transmt_reg[11:10]  = 3; 
 
-  	      	  	checker_transmt_reg[12]     = 1'b0;
-  	      	  	checker_transmt_reg[20:13]  = uart_pkt.PWDATA[15:8];
-  	      	  	checker_transmt_reg[21]     = ^(uart_pkt.PWDATA[15:8]); 
-  	      	  	checker_transmt_reg[23:22]  = 3; 
+  	    checker_transmt_reg[12]     = 1'b0;
+  	    checker_transmt_reg[20:13]  = apb_pkt.PWDATA[15:8];
+  	    checker_transmt_reg[21]     = ^(apb_pkt.PWDATA[15:8]); 
+  	    checker_transmt_reg[23:22]  = 3; 
 
-  	      	  	checker_transmt_reg[24]     = 1'b0;
-  	      	  	checker_transmt_reg[32:25]  = uart_pkt.PWDATA[23:16];
-  	      	  	checker_transmt_reg[33]     = ^(uart_pkt.PWDATA[23:16]); 
-  	      	  	checker_transmt_reg[35:34]  = 3; 
+  	    checker_transmt_reg[24]     = 1'b0;
+  	    checker_transmt_reg[32:25]  = apb_pkt.PWDATA[23:16];
+  	    checker_transmt_reg[33]     = ^(apb_pkt.PWDATA[23:16]); 
+  	    checker_transmt_reg[35:34]  = 3; 
 
-  	      	  	checker_transmt_reg[36]     = 1'b0;
-  	      	  	checker_transmt_reg[44:37]  = uart_pkt.PWDATA[31:24];
-  	      	  	checker_transmt_reg[45]     = ^(uart_pkt.PWDATA[31:24]); 
-  	      	  	checker_transmt_reg[47:46]  = 3; 
-  	      	end
-  	    	transmitter_reg[tx_count] 	= uart_pkt.Tx; // store the data into transmitter register (Reference Model)
-  	    	tx_count 					= tx_count + 1 ;     
-  	   	end
+  	    checker_transmt_reg[36]     = 1'b0;
+  	    checker_transmt_reg[44:37]  = apb_pkt.PWDATA[31:24];
+  	    checker_transmt_reg[45]     = ^(apb_pkt.PWDATA[31:24]); 
+  	    checker_transmt_reg[47:46]  = 3; 
   	endfunction  
   
-  	function compare_config (apbuart_transaction uart_pkt);
-    	if(uart_pkt.PADDR == `baud_config_addr && uart_pkt.PRDATA == `baud_config_reg)
+  	function compare_config (apbuart_transaction apb_pkt);
+    	if(apb_pkt.PADDR == `baud_config_addr && apb_pkt.PRDATA == `baud_config_reg)
     	begin
     	    `uvm_info(get_type_name(),$sformatf("------ :: Baud Rate Config Match :: ------"),UVM_LOW)
-    	    `uvm_info(get_type_name(),$sformatf("Expected Baud Rate: %0h Actual Baud Rate: %0h",`baud_config_reg,uart_pkt.PRDATA),UVM_LOW)
+    	    `uvm_info(get_type_name(),$sformatf("Expected Baud Rate: %0h Actual Baud Rate: %0h",`baud_config_reg,apb_pkt.PRDATA),UVM_LOW)
     	    `uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
     	end
-    	else if(uart_pkt.PADDR == `baud_config_addr && uart_pkt.PRDATA != `baud_config_reg)
+    	else if(apb_pkt.PADDR == `baud_config_addr && apb_pkt.PRDATA != `baud_config_reg)
     	begin
     	    `uvm_error(get_type_name(),$sformatf("------ :: Baud Rate Config MisMatch :: ------"))
-    	    `uvm_info(get_type_name(),$sformatf("Expected Baud Rate: %0h Actual Baud Rate: %0h",`baud_config_reg,uart_pkt.PRDATA),UVM_LOW)
+    	    `uvm_info(get_type_name(),$sformatf("Expected Baud Rate: %0h Actual Baud Rate: %0h",`baud_config_reg,apb_pkt.PRDATA),UVM_LOW)
     	    `uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
     	end
-    	else if(uart_pkt.PADDR == `frame_config_addr && uart_pkt.PRDATA == `frame_config_reg)
+    	else if(apb_pkt.PADDR == `frame_config_addr && apb_pkt.PRDATA == `frame_config_reg)
     	begin
     		`uvm_info(get_type_name(),$sformatf("------ :: Frame Rate  Match :: ------"),UVM_LOW)
-    	    `uvm_info(get_type_name(),$sformatf("Expected Frame Rate: %0h Actual Frame Rate: %0h",`frame_config_reg,uart_pkt.PRDATA),UVM_LOW)
+    	    `uvm_info(get_type_name(),$sformatf("Expected Frame Rate: %0h Actual Frame Rate: %0h",`frame_config_reg,apb_pkt.PRDATA),UVM_LOW)
     	    `uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
     	end
-    	else if(uart_pkt.PADDR == `frame_config_addr && uart_pkt.PRDATA != `frame_config_reg)
+    	else if(apb_pkt.PADDR == `frame_config_addr && apb_pkt.PRDATA != `frame_config_reg)
     	begin
     	    `uvm_error(get_type_name(),$sformatf("------ :: Frame Rate  MisMatch :: ------"))
-    	    `uvm_info(get_type_name(),$sformatf("Expected Frame Rate: %0h Actual Frame Rate: %0h",`frame_config_reg,uart_pkt.PRDATA),UVM_LOW)
+    	    `uvm_info(get_type_name(),$sformatf("Expected Frame Rate: %0h Actual Frame Rate: %0h",`frame_config_reg,apb_pkt.PRDATA),UVM_LOW)
     	    `uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
     	end
-    	else if(uart_pkt.PADDR == `parity_config_addr && uart_pkt.PRDATA == `parity_config_reg)
+    	else if(apb_pkt.PADDR == `parity_config_addr && apb_pkt.PRDATA == `parity_config_reg)
     	begin
     		`uvm_info(get_type_name(),$sformatf("------ :: Even Parity Match :: ------"),UVM_LOW)
-    	    `uvm_info(get_type_name(),$sformatf("Expected Parity Value : %0h Actual Parity Value: %0h",`parity_config_reg,uart_pkt.PRDATA),UVM_LOW)
+    	    `uvm_info(get_type_name(),$sformatf("Expected Parity Value : %0h Actual Parity Value: %0h",`parity_config_reg,apb_pkt.PRDATA),UVM_LOW)
     	    `uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
     	end
-    	else if(uart_pkt.PADDR == `parity_config_addr && uart_pkt.PRDATA != `parity_config_reg)
+    	else if(apb_pkt.PADDR == `parity_config_addr && apb_pkt.PRDATA != `parity_config_reg)
     	begin
     	    `uvm_error(get_type_name(),$sformatf("------ :: Even Parity MisMatch :: ------"))
-    	    `uvm_info(get_type_name(),$sformatf("Expected Parity Value : %0h Actual Parity Value: %0h",`parity_config_reg,uart_pkt.PRDATA),UVM_LOW)
+    	    `uvm_info(get_type_name(),$sformatf("Expected Parity Value : %0h Actual Parity Value: %0h",`parity_config_reg,apb_pkt.PRDATA),UVM_LOW)
     	    `uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
     	end
-    	else if(uart_pkt.PADDR == `stop_bits_config_addr && uart_pkt.PRDATA == `stop_bits_config_reg)
+    	else if(apb_pkt.PADDR == `stop_bits_config_addr && apb_pkt.PRDATA == `stop_bits_config_reg)
     	begin
     	    `uvm_info(get_type_name(),$sformatf("------ :: Stop Bit Match :: ------"),UVM_LOW)
-    	    `uvm_info(get_type_name(),$sformatf("Expected Stop Bit Value : %0h Actual Stop Value: %0h",`stop_bits_config_reg,uart_pkt.PRDATA),UVM_LOW)
+    	    `uvm_info(get_type_name(),$sformatf("Expected Stop Bit Value : %0h Actual Stop Value: %0h",`stop_bits_config_reg,apb_pkt.PRDATA),UVM_LOW)
     	    `uvm_info(get_type_name(),"------------------------------------\n",UVM_LOW)
     	end
-    	else if(uart_pkt.PADDR == `stop_bits_config_addr && uart_pkt.PRDATA != `stop_bits_config_reg)
+    	else if(apb_pkt.PADDR == `stop_bits_config_addr && apb_pkt.PRDATA != `stop_bits_config_reg)
     	begin
     	    `uvm_error(get_type_name(),$sformatf("------ :: Stop Bit MisMatch :: ------"))
-    	    `uvm_info(get_type_name(),$sformatf("Expected Stop Bit Value : %0h Actual Stop Value: %0h",`stop_bits_config_reg,uart_pkt.PRDATA),UVM_LOW)
+    	    `uvm_info(get_type_name(),$sformatf("Expected Stop Bit Value : %0h Actual Stop Value: %0h",`stop_bits_config_reg,apb_pkt.PRDATA),UVM_LOW)
     	    `uvm_info(get_type_name(),"------------------------------------\n",UVM_LOW)
     	end
   	endfunction  
   
-  
   	function compare_transmission (apbuart_transaction uart_pkt);  
-  		if(uart_pkt.PADDR == `trans_data_addr && checker_transmt_reg == transmitter_reg && uart_pkt.PREADY)
+  		if(checker_transmt_reg == uart_pkt.transmitter_reg)
   		begin
   	    	`uvm_info(get_type_name(),$sformatf("------ :: Transmission Data Packet Match :: ------"),UVM_LOW)
-  	    	`uvm_info(get_type_name(),$sformatf("Expected Transmission Data Value : %0h Actual Transmission Data Value: %0h",checker_transmt_reg,transmitter_reg),UVM_LOW)
+  	    	`uvm_info(get_type_name(),$sformatf("Expected Transmission Data Value : %0h Actual Transmission Data Value: %0h",checker_transmt_reg,uart_pkt.transmitter_reg),UVM_LOW)
   	    	`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
   	    end
-  	  	else if(uart_pkt.PADDR == `trans_data_addr && checker_transmt_reg != transmitter_reg && uart_pkt.PREADY)
+  	  	else if(checker_transmt_reg != uart_pkt.transmitter_reg)
   	    begin
   	      	`uvm_error(get_type_name(),$sformatf("------ :: Transmission Data Packet MisMatch :: ------"))
-  	      	`uvm_info(get_type_name(),$sformatf("Expected Transmission Data Value : %0h Actual Transmission Data Value: %0h",checker_transmt_reg,transmitter_reg),UVM_LOW)
+  	      	`uvm_info(get_type_name(),$sformatf("Expected Transmission Data Value : %0h Actual Transmission Data Value: %0h",checker_transmt_reg,uart_pkt.transmitter_reg),UVM_LOW)
   	      	`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
   	    end
   	endfunction  
   
   
   	function receive_ref_model (apbuart_transaction uart_pkt); 
-  		if (uart_pkt.PADDR == 5) 
-  	  		receiver_reg = {uart_pkt.rec_temp[44:37],uart_pkt.rec_temp[32:25],uart_pkt.rec_temp[20:13],uart_pkt.rec_temp[8:1]} ; // reference model for reciving register
-  	endfunction  
+  	  	receiver_reg = {uart_pkt.rec_temp[44:37],uart_pkt.rec_temp[32:25],uart_pkt.rec_temp[20:13],uart_pkt.rec_temp[8:1]} ; // reference model for reciving register
+	endfunction  
 	  
- 	function compare_receive (apbuart_transaction uart_pkt); 
-  		if (uart_pkt.PADDR == 5)
-     	begin
-        	if(uart_pkt.PRDATA == receiver_reg)
+  	function compare_receive (apbuart_transaction apb_pkt , apbuart_transaction uart_pkt); 
+        if(apb_pkt.PRDATA == receiver_reg)
+        begin
+        	`uvm_info(get_type_name(),$sformatf("------ :: Reciever Data Packet Match :: ------"),UVM_LOW)
+        	`uvm_info(get_type_name(),$sformatf("Expected Reciever Data Value : %0h Actual Reciever Data Value: %0h",receiver_reg,apb_pkt.PRDATA),UVM_LOW)
+        	`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
+            if(uart_pkt.fpn_flag == 1 && uart_pkt.PSLVERR == 1'b1) // framing PSLVERR check
             begin
-            	`uvm_info(get_type_name(),$sformatf("------ :: Reciever Data Packet Match :: ------"),UVM_LOW)
-            	`uvm_info(get_type_name(),$sformatf("Expected Reciever Data Value : %0h Actual Reciever Data Value: %0h",receiver_reg,uart_pkt.PRDATA),UVM_LOW)
-            	`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
-                if(uart_pkt.fpn_flag == 1 && uart_pkt.PSLVERR == 1'b1) // framing PSLVERR check
-                begin
-                	`uvm_info(get_type_name(),$sformatf("------ :: Framing Error Match :: ------"),UVM_LOW)
-            		`uvm_info(get_type_name(),$sformatf("Expected Framing Error Value : %0h Actual Framing Error Value: %0h",1'b1,uart_pkt.PSLVERR),UVM_LOW)
-            		`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
-                end  
-                else if(uart_pkt.fpn_flag == 1 && uart_pkt.PSLVERR == 1'b0) // framing PSLVERR check
-                begin
-                    `uvm_error(get_type_name(),$sformatf("------ :: Framing Error MisMatch :: ------"))
-            		`uvm_info(get_type_name(),$sformatf("Expected Framing Error Value : %0h Actual Framing Error Value: %0h",1'b1,uart_pkt.PSLVERR),UVM_LOW)
-            		`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
-                end  
-                else if(uart_pkt.fpn_flag == 2 && uart_pkt.PSLVERR == 1'b1) // Parity PSLVERR check
-                begin
-                    `uvm_info(get_type_name(),$sformatf("------ :: Parity Error Match :: ------"),UVM_LOW)
-                    `uvm_info(get_type_name(),$sformatf("Expected Parity Error Value : %0h Actual Parity Error Value: %0h",1'b1,uart_pkt.PSLVERR),UVM_LOW)
-            		`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
-                end  
-                else if(uart_pkt.fpn_flag == 1 && uart_pkt.PSLVERR == 1'b0) // Parity PSLVERR check
-                begin
-                    `uvm_error(get_type_name(),$sformatf("------ :: Parity Error MisMatch :: ------"));
-                    `uvm_info(get_type_name(),$sformatf("Expected Parity Error Value : %0h Actual Parity Error Value: %0h",1'b1,uart_pkt.PSLVERR),UVM_LOW);
-                    `uvm_info(get_type_name(),"------------------------------------",UVM_LOW);
-                end  
-                else if(uart_pkt.fpn_flag == 3 && uart_pkt.PSLVERR == 1'b0) // Error Free sequence check
-                begin
-                    `uvm_info(get_type_name(),$sformatf("------ :: No Error :: ------"),UVM_LOW)
-                    `uvm_info(get_type_name(),$sformatf("Expected Error Value : %0h Actual Error Value: %0h",1'b0,uart_pkt.PSLVERR),UVM_LOW)
-            		`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
-                end  
-                else if(uart_pkt.fpn_flag == 3 && uart_pkt.PSLVERR == 1'b1) // Error Free sequence check
-                begin
-                    `uvm_error(get_type_name(),$sformatf("------ :: Error Signal Detected :: ------"));
-                    `uvm_info(get_type_name(),$sformatf("Expected Error Value : %0h Actual Error Value: %0h",1'b0,uart_pkt.PSLVERR),UVM_LOW);
-            		`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
-                end  
+            	`uvm_info(get_type_name(),$sformatf("------ :: Framing Error Match :: ------"),UVM_LOW)
+        		`uvm_info(get_type_name(),$sformatf("Expected Framing Error Value : %0h Actual Framing Error Value: %0h",1'b1,apb_pkt.PSLVERR),UVM_LOW)
+        		`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
             end  
-			else
-        	begin
-            	`uvm_error(get_type_name(),$sformatf("------ :: Reciever Data Packet MisMatch :: ------"))
-            	`uvm_info(get_type_name(),$sformatf("Expected Reciever Data Value : %0h Actual Reciever Data Value: %0h",receiver_reg,uart_pkt.PRDATA),UVM_LOW)
-            	`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
-        	end
-    	end      
+          	else if(uart_pkt.fpn_flag == 1 && apb_pkt.PSLVERR == 1'b0) // framing PSLVERR check
+            begin
+                `uvm_error(get_type_name(),$sformatf("------ :: Framing Error MisMatch :: ------"))
+        		`uvm_info(get_type_name(),$sformatf("Expected Framing Error Value : %0h Actual Framing Error Value: %0h",1'b1,apb_pkt.PSLVERR),UVM_LOW)
+        		`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
+            end  
+          	else if(uart_pkt.fpn_flag == 2 && apb_pkt.PSLVERR == 1'b1) // Parity PSLVERR check
+            begin
+                `uvm_info(get_type_name(),$sformatf("------ :: Parity Error Match :: ------"),UVM_LOW)
+                `uvm_info(get_type_name(),$sformatf("Expected Parity Error Value : %0h Actual Parity Error Value: %0h",1'b1,apb_pkt.PSLVERR),UVM_LOW)
+        		`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
+            end  
+          	else if(uart_pkt.fpn_flag == 1 && apb_pkt.PSLVERR == 1'b0) // Parity PSLVERR check
+            begin
+                `uvm_error(get_type_name(),$sformatf("------ :: Parity Error MisMatch :: ------"));
+                `uvm_info(get_type_name(),$sformatf("Expected Parity Error Value : %0h Actual Parity Error Value: %0h",1'b1,apb_pkt.PSLVERR),UVM_LOW);
+                `uvm_info(get_type_name(),"------------------------------------",UVM_LOW);
+            end  
+          	else if(uart_pkt.fpn_flag == 3 && apb_pkt.PSLVERR == 1'b0) // Error Free sequence check
+            begin
+                `uvm_info(get_type_name(),$sformatf("------ :: No Error :: ------"),UVM_LOW)
+                `uvm_info(get_type_name(),$sformatf("Expected Error Value : %0h Actual Error Value: %0h",1'b0,apb_pkt.PSLVERR),UVM_LOW)
+        		`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
+            end  
+          	else if(uart_pkt.fpn_flag == 3 && apb_pkt.PSLVERR == 1'b1) // Error Free sequence check
+            begin
+                `uvm_error(get_type_name(),$sformatf("------ :: Error Signal Detected :: ------"));
+                `uvm_info(get_type_name(),$sformatf("Expected Error Value : %0h Actual Error Value: %0h",1'b0,apb_pkt.PSLVERR),UVM_LOW);
+        		`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
+            end  
+        end  
+		else
+        begin
+        	`uvm_error(get_type_name(),$sformatf("------ :: Reciever Data Packet MisMatch :: ------"))
+        	`uvm_info(get_type_name(),$sformatf("Expected Reciever Data Value : %0h Actual Reciever Data Value: %0h",receiver_reg,apb_pkt.PRDATA),UVM_LOW)
+        	`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
+        end     
   	endfunction
 endclass
