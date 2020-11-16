@@ -9,7 +9,7 @@
   5. apbuart_free_error_test  
   6. apbuart_rec_reg_test  
 
-**HOW TO USE MAKEFILE:**
+**HOW TO USE MAKEFILE:**  
   Design files are in *design* folder and UVM testbench components are in *uvm_tb* folder. Now go to the *sim* folder where you'll find a Makefile.
   This Makefile has following targets:  
     **1. compile:**     to compile the design files available in *design* folder  
