@@ -10,6 +10,14 @@ class apbuart_driver extends uvm_driver #(apbuart_transaction);
 		super.new(name, parent);
 	endfunction : new
 
+	uvm_analysis_port #(apbuart_transaction) item_collected_port_drv;
+	
+	
+	
+	
+	
+  	apbuart_transaction trans_collected_drv; 
+
   	//--------------------------------------- 
   	// build phase
   	//---------------------------------------
@@ -17,6 +25,8 @@ class apbuart_driver extends uvm_driver #(apbuart_transaction);
   		super.build_phase(phase);
   	   	if(!uvm_config_db#(virtual apbuart_if)::get(this, "", "vif", vif))
   	    	`uvm_fatal("NO_VIF",{"virtual interface must be set for: ",get_full_name(),".vif"});
+	      	trans_collected_drv = new();
+      		item_collected_port_drv = new("item_collected_port_drv", this);
   	endfunction: build_phase
 
   	//---------------------------------------  
@@ -76,5 +86,6 @@ class apbuart_driver extends uvm_driver #(apbuart_transaction);
   	  	  	end	
 	*/
   	  	end
+		item_collected_port_drv.write(trans_collected_drv); // It sends the transaction non-blocking and it
   	endtask
 endclass
