@@ -1,21 +1,6 @@
-// -----------------------------------------------------------------------------------
-//  Using the `uvm_analysis_imp_decl() macro allows the construction of two analysis 
-//  implementation ports with corresponding, uniquely named, write methods
-// -----------------------------------------------------------------------------------
-
-`uvm_analysis_imp_decl(_mon) 
-`uvm_analysis_imp_decl(_drv) 
-
 class apbuart_scoreboard extends uvm_scoreboard;
 	`uvm_component_utils(apbuart_scoreboard)
   
-  	// ---------------------------------------
-  	//  declaring pkt_qu to store the pkt's 
-  	//  recived from monitor
-  	// ---------------------------------------
-  	apbuart_transaction pkt_qu_mon[$];
-  	apbuart_transaction pkt_qu_drv[$];
-	
   	// ----------------------------------------------
   	//  scoreboad CONFIGURATION ADDRESS memory map 
   	//  and specific configuration register value
@@ -41,56 +26,58 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	//  port to recive packets from monitor first argument is transation type and 
   	//  other is defining which subscriber is attached
   	// ------------------------------------------------------------------------------
-  	//uvm_analysis_imp#(uart_transaction, uart_scoreboard) item_collected_export;
-    uvm_analysis_imp_mon #(apbuart_transaction, apbuart_scoreboard) item_collected_export_mon;
-  	uvm_analysis_imp_drv #(apbuart_transaction, apbuart_scoreboard) item_collected_export_drv;
+  
+  	uvm_analysis_export #(apbuart_transaction) item_collected_export_mon;
+  	uvm_analysis_export #(apbuart_transaction) item_collected_export_drv;
+  
+  
+  	// -----------------------------------------
+  	//  declaring TLM FIFOS to store the pkt's 
+  	//  recived from monitor and driver
+  	// -----------------------------------------
+    uvm_tlm_analysis_fifo #(apbuart_transaction) drv_fifo;
+    uvm_tlm_analysis_fifo #(apbuart_transaction) mon_fifo;
+  
+  
+  	apbuart_transaction apbuart_pkt_mon;
+    apbuart_transaction apbuart_pkt_drv;
 
   	//---------------------------------------
   	// new - constructor
   	//---------------------------------------
   	function new (string name, uvm_component parent);
   		super.new(name, parent);
+      	apbuart_pkt_drv    = new("apbuart_pkt_drv");
+        apbuart_pkt_mon    = new("apbuart_pkt_mon");
   	endfunction : new
   
   	// ---------------------------------------
   	//  build_phase - create port 
   	// ---------------------------------------
-  	function void build_phase(uvm_phase phase);
+  	virtual function void build_phase(uvm_phase phase);
   		super.build_phase(phase);
       	item_collected_export_mon 		= new("item_collected_export_mon", this);
       	item_collected_export_drv 		= new("item_collected_export_drv", this);
+      	drv_fifo 						= new("drv_fifo", this);
+        mon_fifo 						= new("mon_fifo", this);
   	endfunction: build_phase
   
-  	// ---------------------------------------------
-  	//  write task - recives the pkt from monitor 
-  	//  and pushes into queue
-  	// ---------------------------------------------
-  	virtual function void write_mon(apbuart_transaction pkt);
-  		pkt_qu_mon.push_back(pkt); // Pushing the transactions from the end of queue
-  	endfunction : write_mon
   
-  	// ---------------------------------------------
-  	//  write task - recives the pkt from driver 
-  	//  and pushes into queue
-  	// ---------------------------------------------
-  	virtual function void write_drv(apbuart_transaction pkt);
-  		pkt_qu_drv.push_back(pkt); // Pushing the transactions from the end of queue
-  	endfunction : write_drv
-
+  	// connect phase (connecting fifos with analysis port)
+    virtual function void connect_phase(uvm_phase phase);
+        item_collected_export_drv.connect(drv_fifo.analysis_export); 
+        item_collected_export_mon.connect(mon_fifo.analysis_export);
+    endfunction: connect_phase
+  
   	// --------------------------------------------------------------------------------------
   	//  run_phase - compare's the read data with the expected data(stored in register)
   	//  Transmitter register will be updated on value of config address=4 and Tx_detect = 1
   	// --------------------------------------------------------------------------------------
   	virtual task run_phase(uvm_phase phase);
-    	apbuart_transaction apbuart_pkt_mon;
-      	apbuart_transaction apbuart_pkt_drv;
-    
     	forever 
     	begin
-          	wait(pkt_qu_drv.size() > 0);	    	// checking the fifo that it contains any valid entry from driver
-      		apbuart_pkt_drv = pkt_qu_drv.pop_front(); 	// getting the entry from the start of fifo
-          	wait(pkt_qu_mon.size() > 0);	    	// checking the fifo that it contains any valid entry from monitor
-      		apbuart_pkt_mon = pkt_qu_mon.pop_front(); 	// getting the entry from the start of fifo
+          	drv_fifo.get(apbuart_pkt_drv);     	// from drv
+          	mon_fifo.get(apbuart_pkt_mon);    	// from mon
           	receive_ref_model (apbuart_pkt_drv); 
           	compare_receive (apbuart_pkt_mon,apbuart_pkt_drv) ;
           	trasmitter_ref_model (apbuart_pkt_mon) ;
@@ -99,7 +86,7 @@ class apbuart_scoreboard extends uvm_scoreboard;
     	end
   	endtask : run_phase
   
-  	function trasmitter_ref_model (apbuart_transaction uart_pkt);
+  	function void trasmitter_ref_model (apbuart_transaction uart_pkt);
   		if(uart_pkt.PWRITE && uart_pkt.PADDR == `trans_data_addr && tx_count <= 48) // checking if transmission occurs
   	    begin
   	      	if(tx_count == 0)
@@ -129,7 +116,7 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	   	end
   	endfunction  
   
-  	function compare_config (apbuart_transaction uart_pkt);
+  	function void compare_config (apbuart_transaction uart_pkt);
     	if(uart_pkt.PADDR == `baud_config_addr && uart_pkt.PRDATA == `baud_config_reg)
     	begin
     	    `uvm_info(get_type_name(),$sformatf("------ :: Baud Rate Config Match :: ------"),UVM_LOW)
@@ -181,7 +168,7 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	endfunction  
   
   
-  	function compare_transmission (apbuart_transaction uart_pkt);  
+  	function void compare_transmission (apbuart_transaction uart_pkt);  
   		if(uart_pkt.PADDR == `trans_data_addr && checker_transmt_reg == transmitter_reg && uart_pkt.PREADY)
   		begin
   	    	`uvm_info(get_type_name(),$sformatf("------ :: Transmission Data Packet Match :: ------"),UVM_LOW)
@@ -197,12 +184,12 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	endfunction  
   
   
-  function receive_ref_model (apbuart_transaction uart_pkt); 
+  function void receive_ref_model (apbuart_transaction uart_pkt); 
   		if (uart_pkt.PADDR == 5) 
   	  		receiver_reg = {uart_pkt.rec_temp[44:37],uart_pkt.rec_temp[32:25],uart_pkt.rec_temp[20:13],uart_pkt.rec_temp[8:1]} ; // reference model for reciving register
   	endfunction  
 	  
-  function compare_receive (apbuart_transaction uart_pkt , apbuart_transaction uart_pkt1); 
+  function void compare_receive (apbuart_transaction uart_pkt , apbuart_transaction uart_pkt1); 
     	if (uart_pkt1.PADDR == 5)
      	begin
         	if(uart_pkt.PRDATA == receiver_reg)
