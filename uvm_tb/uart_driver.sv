@@ -9,8 +9,8 @@ class uart_driver extends uvm_driver #(uart_transaction);
 	function new (string name, uvm_component parent);
 		super.new(name, parent);
 	endfunction : new
-  	uvm_analysis_port #(uart_transaction) item_collected_port_drv;
-	uart_transaction trans_collected_drv; 
+  	uvm_analysis_port #(uart_transaction) item_collected_port;
+	uart_transaction trans_collected; 
 
   	//--------------------------------------- 
   	// build phase
@@ -19,8 +19,8 @@ class uart_driver extends uvm_driver #(uart_transaction);
   		super.build_phase(phase);
   	   	if(!uvm_config_db#(virtual uart_if)::get(this, "", "vif", vif))
   	    	`uvm_fatal("NO_VIF",{"virtual interface must be set for: ",get_full_name(),".vif"});
-		trans_collected_drv = new();
-      		item_collected_port_drv = new("item_collected_port_drv", this);
+		trans_collected = new();
+      		item_collected_port = new("item_collected_port", this);
   	endfunction: build_phase
 
   	//---------------------------------------  
@@ -56,6 +56,6 @@ class uart_driver extends uvm_driver #(uart_transaction);
   	  	  			`DRIV_IF.RX 	<= req.rec_temp[bcount];
   	  	  		bcount++;
   	  	end
-		item_collected_port_drv.write(trans_collected_drv); // It sends the transaction non-blocking and it
+		item_collected_port.write(trans_collected); // It sends the transaction non-blocking and it
   	endtask
 endclass
