@@ -1,4 +1,4 @@
-`define DRIV_IF vifapb.DRIVER.driver_cb
+`define DRIVAPB_IF vifapb.DRIVER.driver_cb
 
 class apb_driver extends uvm_driver #(apb_transaction);
 	logic [5:0]		bcount = 0;
@@ -52,33 +52,33 @@ class apb_driver extends uvm_driver #(apb_transaction);
   	//---------------------------------------
 	
   	virtual task drive(apb_transaction req);
-  		`DRIV_IF.PSELx		<= 0;
-		`DRIV_IF.PENABLE	<= 0;  
-		`DRIV_IF.PWRITE		<= 0;
-  	  	`DRIV_IF.PWDATA		<= 0;
-  	  	`DRIV_IF.PADDR		<= 0;	
+  		`DRIVAPB_IF.PSELx		<= 0;
+		`DRIVAPB_IF.PENABLE	<= 0;  
+		`DRIVAPB_IF.PWRITE		<= 0;
+  	  	`DRIVAPB_IF.PWDATA		<= 0;
+  	  	`DRIVAPB_IF.PADDR		<= 0;	
   	  	repeat(2)@(posedge vifapb.DRIVER.PCLK);
   	  	if(req.PADDR == 0 || req.PADDR == 1 || req.PADDR == 2 || req.PADDR == 3 || req.PADDR == 4) 
   	  	begin
-			`DRIV_IF.PSELx		<= 1;
+			`DRIVAPB_IF.PSELx		<= 1;
 			@(posedge vifapb.DRIVER.PCLK);
-			`DRIV_IF.PENABLE	<= 1;
-  	  	    `DRIV_IF.PWRITE		<= req.PWRITE;
-  	  	    `DRIV_IF.PWDATA		<= req.PWDATA;
-  	  	    `DRIV_IF.PADDR		<= req.PADDR;
-			 wait(`DRIV_IF.PREADY);		
-			`DRIV_IF.PSELx		<= 0;
-			`DRIV_IF.PENABLE	<= 0;
+			`DRIVAPB_IF.PENABLE	<= 1;
+  	  	    `DRIVAPB_IF.PWRITE		<= req.PWRITE;
+  	  	    `DRIVAPB_IF.PWDATA		<= req.PWDATA;
+  	  	    `DRIVAPB_IF.PADDR		<= req.PADDR;
+			 wait(`DRIVAPB_IF.PREADY);		
+			`DRIVAPB_IF.PSELx		<= 0;
+			`DRIVAPB_IF.PENABLE	<= 0;
           	 trans_collected_drv.PADDR <= req.PADDR;
   	  	end
  		else if(req.PADDR == 5)
   	  	begin
-			`DRIV_IF.PSELx		<= 1;
+			`DRIVAPB_IF.PSELx		<= 1;
 			@(posedge vifapb.DRIVER.PCLK);
-			`DRIV_IF.PENABLE	<= 1;
-  	  	    `DRIV_IF.PWRITE		<= req.PWRITE;
-  	  	    `DRIV_IF.PWDATA		<= req.PWDATA;
-  	  	    `DRIV_IF.PADDR		<= req.PADDR;
+			`DRIVAPB_IF.PENABLE	<= 1;
+  	  	    `DRIVAPB_IF.PWRITE		<= req.PWRITE;
+  	  	    `DRIVAPB_IF.PWDATA		<= req.PWDATA;
+  	  	    `DRIVAPB_IF.PADDR		<= req.PADDR;
   	  	end
 		item_collected_port.write(trans_collected); // It sends the transaction non-blocking and it
   	endtask

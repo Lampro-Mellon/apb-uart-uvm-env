@@ -24,4 +24,4 @@ run-test:
 
 clean:
 			@echo "Cleaning up...."
-			rm -rf csrc DVEfiles inter.vpd simv simv.daidir ucli.key vc_hdrs.h vcs.log .inter.vpd.uvm *.log
+			rm -rf csrc DVEfiles inter.vpd dump.vcd simv simv.daidir ucli.key vc_hdrs.h vcs.log .inter.vpd.uvm *.log

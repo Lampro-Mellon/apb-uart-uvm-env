@@ -1,4 +1,4 @@
-`define MON_IF vifuart.MONITOR.monitor_cb
+`define MONUART_IF vifuart.MONITOR.monitor_cb
 
 class uart_monitor extends uvm_monitor;
   
@@ -52,14 +52,14 @@ class uart_monitor extends uvm_monitor;
           repeat(2)@(posedge vifuart.MONITOR.PCLK);
 		repeat(48) begin ///////////////////// check if it is to be 48 or 47 
 			if(count == 1'b0) begin
-          			wait(!`MON_IF.Tx);
+          			wait(!`MONUART_IF.Tx);
           		    	@(posedge vifuart.MONITOR.PCLK);
-				trans_collected.transmitter_reg[count]          = `MON_IF.Tx;
+				trans_collected.transmitter_reg[count]          = `MONUART_IF.Tx;
           		    	count=count+1;
           		end  
           		else begin
           		    	repeat(5208)@(posedge vifuart.MONITOR.PCLK);
-				trans_collected.transmitter_reg[count]          = `MON_IF.Tx;
+				trans_collected.transmitter_reg[count]          = `MONUART_IF.Tx;
 				count=count+1;				  
 			end
 		end

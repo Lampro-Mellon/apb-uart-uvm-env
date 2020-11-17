@@ -1,4 +1,4 @@
-`define DRIV_IF vifuart.DRIVER.driver_cb
+`define DRIVUART_IF vifuart.DRIVER.driver_cb
 
 class uart_driver extends uvm_driver #(uart_transaction);
 	logic [5:0]		bcount = 0;
@@ -43,13 +43,13 @@ class uart_driver extends uvm_driver #(uart_transaction);
   	//---------------------------------------
 	
   	virtual task drive(uart_transaction req);
-		`DRIV_IF.RX	<= 1;
+		`DRIVUART_IF.RX	<= 1;
   	  	repeat(2)@(posedge vifuart.DRIVER.PCLK);
   	  	    @(posedge vifuart.PCLK); 
   	  	  	repeat(48) 
 			begin
   	  	    	repeat(326*16)@(posedge vifuart.DRIVER.PCLK);
-  	  	  			`DRIV_IF.RX 	<= req.rec_temp[bcount];
+  	  	  			`DRIVUART_IF.RX 	<= req.rec_temp[bcount];
   	  	  		bcount++;
   	  	end
 		item_collected_port_drv.write(trans_collected); // It sends the transaction non-blocking and it
