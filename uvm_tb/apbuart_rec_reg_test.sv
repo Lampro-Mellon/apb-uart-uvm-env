@@ -8,7 +8,7 @@ class apbuart_rec_reg_test extends apbuart_base_test;
 
     virtual function void build_phase (uvm_phase phase);
 	    super.build_phase(phase);
-      	    apbuart_sq = apbuart_recReg_seq::type_id::create("apbuart_sq2",this);
+      	    apbuart_sq = apbuart_recReg_seq::type_id::create("apbuart_sq",this);
     endfunction
 
     task run_phase(uvm_phase phase);
