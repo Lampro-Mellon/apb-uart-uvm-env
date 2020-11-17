@@ -9,6 +9,14 @@ class apbuart_driver extends uvm_driver #(apbuart_transaction);
 	function new (string name, uvm_component parent);
 		super.new(name, parent);
 	endfunction : new
+  
+  	uvm_analysis_port #(apbuart_transaction) item_collected_port_drv;
+  
+  	// ------------------------------------------------------------------------
+  	// The following property holds the transaction information currently
+  	// begin captured by monitor run phase and make it one transaction.
+  	// ------------------------------------------------------------------------
+  	apbuart_transaction trans_collected_drv; 
 
 	uvm_analysis_port #(apbuart_transaction) item_collected_port;
 	
@@ -25,8 +33,8 @@ class apbuart_driver extends uvm_driver #(apbuart_transaction);
   		super.build_phase(phase);
   	   	if(!uvm_config_db#(virtual apbuart_if)::get(this, "", "vif", vif))
   	    	`uvm_fatal("NO_VIF",{"virtual interface must be set for: ",get_full_name(),".vif"});
-	      	trans_collected = new();
-      		item_collected_port = new("item_collected_port", this);
+      	trans_collected_drv = new();
+      	item_collected_port_drv = new("item_collected_port_drv", this);
   	endfunction: build_phase
 
   	//---------------------------------------  
@@ -63,9 +71,10 @@ class apbuart_driver extends uvm_driver #(apbuart_transaction);
   	  	    `DRIV_IF.PWRITE		<= req.PWRITE;
   	  	    `DRIV_IF.PWDATA		<= req.PWDATA;
   	  	    `DRIV_IF.PADDR		<= req.PADDR;
-			wait(`DRIV_IF.PREADY);		
+			 wait(`DRIV_IF.PREADY);		
 			`DRIV_IF.PSELx		<= 0;
 			`DRIV_IF.PENABLE	<= 0;
+          	 trans_collected_drv.PADDR <= req.PADDR;
   	  	end
  		else if(req.PADDR == 5)
   	  	begin
@@ -78,9 +87,15 @@ class apbuart_driver extends uvm_driver #(apbuart_transaction);
   	 // 	  	 vif.rec_temp 		<= req.rec_temp;
   	 // 	  	 vif.fpn_flag 		<= req.fpn_flag;
   	 /* 	    @(posedge vif.PCLK); 
+
+          	 trans_collected_drv.PADDR   <= req.PADDR;
+          	 trans_collected_drv.rec_temp <= req.rec_temp;
+          	 trans_collected_drv.fpn_flag <= req.fpn_flag;
+  	  	    @(posedge vif.PCLK); 
+
   	  	  	repeat(48) 
 			begin
-  	  	    	repeat(326*16)@(posedge vif.DRIVER.PCLK);
+              repeat(326*16)@(posedge vif.DRIVER.PCLK); // 16*6
   	  	  			`DRIV_IF.RX 	<= req.rec_temp[bcount];
   	  	  		bcount++;
   	  	  	end	

@@ -1,4 +1,3 @@
-`include "Defines.sv"
 module uart_transmitter	
 (
 	input	logic	tx_tick,
