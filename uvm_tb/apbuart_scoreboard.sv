@@ -273,6 +273,7 @@ class apbuart_scoreboard extends uvm_scoreboard;
                 `uvm_error(get_type_name(),$sformatf("------ :: Error Signal Detected :: ------"));
                 `uvm_info(get_type_name(),$sformatf("Expected Error Value : %0h Actual Error Value: %0h",1'b0,apb_pkt.PSLVERR),UVM_LOW);
         		`uvm_info(get_type_name(),"------------------------------------",UVM_LOW)
+
             end  
         end  
 		else

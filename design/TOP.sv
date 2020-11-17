@@ -1,4 +1,3 @@
-`include "Defines.sv"
 module apb_uart_top (
 	 input logic PCLK,
 	 input logic PRESETn,
