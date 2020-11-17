@@ -1,7 +1,3 @@
-`include "Defines.sv"
-`include "Baud_Rate_Generator.sv"
-`include "Recevier_BB.sv"
-`include "Transmitter.sv"
 module apb_uart
 (
   input 	logic PCLK,

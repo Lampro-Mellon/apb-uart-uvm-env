@@ -10,10 +10,10 @@ class apbuart_monitor extends uvm_monitor;
   	virtual apbuart_if vif;
   
   	// ---------------------------------------
-  	// analysis port, to send the transaction
+  	// analysis port, to `uvm_analysis_imp_decl( _mon ) send the transaction
   	// to scoreboard
   	// ---------------------------------------
-  	uvm_analysis_port #(apbuart_transaction) item_collected_port;
+  	uvm_analysis_port #(apbuart_transaction) item_collected_port_mon;
   
   	// ------------------------------------------------------------------------
   	// The following property holds the transaction information currently
@@ -27,7 +27,7 @@ class apbuart_monitor extends uvm_monitor;
   	function new (string name, uvm_component parent);
   	  	super.new(name, parent);
   	  	trans_collected = new();
-  	  	item_collected_port = new("item_collected_port", this);
+      	item_collected_port_mon = new("item_collected_port_mon", this);
   	endfunction : new
 
   	// -----------------------------------------------
@@ -84,7 +84,9 @@ class apbuart_monitor extends uvm_monitor;
           		  end
           		trans_collected.Tx          = `MON_IF.Tx;
           		trans_collected.PREADY      = `MON_IF.PREADY;
+              
               		wait(!`MON_IF.PREADY);
+              	wait(!`MON_IF.PREADY);
       		end  
 	*/
       		else if(`MON_IF.PWRITE == 0 && `MON_IF.PADDR == 5) 
