@@ -1,4 +1,3 @@
-`include "Defines.sv"
 module apb_slave(
  	 /*Input Signals from APB Master*/
 	 input logic PCLK,
@@ -26,7 +25,7 @@ module apb_slave(
 );
 	logic config_temp;
 
-	assign config_temp 			= (PADDR == `baud_config) || (PADDR == `frame_config) || (PADDR == `parity_config) || (PADDR == `stop_bits_config);
+	assign  config_temp 		= (PADDR == `baud_config) || (PADDR == `frame_config) || (PADDR == `parity_config) || (PADDR == `stop_bits_config);
 	assign 	TX_detect 			= PSELx && PENABLE && PWRITE 	 && (PADDR == `trans_data);
 	assign 	RX_detect 			= PSELx && PENABLE && (~PWRITE)  && (PADDR == `recv_data);
 	assign 	config_write_detect = PSELx && PENABLE && PWRITE && config_temp;
