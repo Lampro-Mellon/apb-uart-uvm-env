@@ -1,4 +1,4 @@
-interface apbuart_if (input PCLK, input PRESETn);
+interface apb_if (input PCLK, input PRESETn);
 
   //Signals Declaration 
     logic           PSELx;

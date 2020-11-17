@@ -34,10 +34,10 @@ class apbuart_env extends uvm_env;
     // ------------------------------------------------------------
     function void connect_phase(uvm_phase phase);
         super.connect_phase(phase);
-	    apb_agnt.monitor.item_collected_port.connect(apbuart_scb.item_collected_export_monapb);
-       	uart_agnt.driver.item_collected_port.connect(apbuart_scb.item_collected_export_drvuart);
-        apb_agnt.driver.item_collected_port.connect(apbuart_scb.item_collected_export_drvapb);
-	    uart_agnt.monitor.item_collected_export.connect(apbuart_scb.item_collected_export_monuart)
+	    apb_agnt.monitor.item_collected_port_mon.connect(apbuart_scb.item_collected_export_monapb);
+       	uart_agnt.driver.item_collected_port_drv.connect(apbuart_scb.item_collected_export_drvuart);
+        apb_agnt.driver.item_collected_port_drv.connect(apbuart_scb.item_collected_export_drvapb);
+	    uart_agnt.monitor.item_collected_port_mon.connect(apbuart_scb.item_collected_export_monuart);
          
         uvm_config_db#(apb_sequencer)::set(this,"*","apb_sqr",apb_agnt.sequencer);
         uvm_config_db#(uart_sequencer)::set(this,"*","uart_sqr",uart_agnt.sequencer); 

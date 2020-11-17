@@ -1,9 +1,9 @@
-`define DRIV_IF vif.DRIVER.driver_cb
+`define DRIV_IF vifapb.DRIVER.driver_cb
 
 class apb_driver extends uvm_driver #(apb_transaction);
 	logic [5:0]		bcount = 0;
   
-	virtual apbuart_if	vif;
+	virtual apb_if	vifapb;
   	`uvm_component_utils(apb_driver)
     
 	function new (string name, uvm_component parent);
@@ -19,11 +19,6 @@ class apb_driver extends uvm_driver #(apb_transaction);
   	apb_transaction trans_collected_drv; 
 
 	uvm_analysis_port #(apb_transaction) item_collected_port;
-	
-	
-	
-	
-	
   	apb_transaction trans_collected; 
 
   	//--------------------------------------- 
@@ -31,8 +26,8 @@ class apb_driver extends uvm_driver #(apb_transaction);
   	//---------------------------------------
   	function void build_phase(uvm_phase phase);
   		super.build_phase(phase);
-  	   	if(!uvm_config_db#(virtual apbuart_if)::get(this, "", "vif", vif))
-  	    	`uvm_fatal("NO_VIF",{"virtual interface must be set for: ",get_full_name(),".vif"});
+  	   	if(!uvm_config_db#(virtual apb_if)::get(this, "", "vifapb", vifapb))
+  	    	`uvm_fatal("NO_VIF",{"virtual interface must be set for: ",get_full_name(),".vifapb"});
       	trans_collected_drv = new();
       	item_collected_port_drv = new("item_collected_port_drv", this);
   	endfunction: build_phase
@@ -44,7 +39,7 @@ class apb_driver extends uvm_driver #(apb_transaction);
   		apb_transaction req;
   	  	forever 
   	  	begin
-  	    	@(posedge vif.PCLK iff (vif.PRESETn))
+  	    	@(posedge vifapb.PCLK iff (vifapb.PRESETn))
   	    	seq_item_port.get_next_item(req);
   	    	drive(req);
   	    	seq_item_port.item_done();
@@ -56,17 +51,17 @@ class apb_driver extends uvm_driver #(apb_transaction);
   	// drives the value's from seq_item to interface signals
   	//---------------------------------------
 	
-  	virtual task drive(ap_transaction req);
+  	virtual task drive(apb_transaction req);
   		`DRIV_IF.PSELx		<= 0;
 		`DRIV_IF.PENABLE	<= 0;  
 		`DRIV_IF.PWRITE		<= 0;
   	  	`DRIV_IF.PWDATA		<= 0;
   	  	`DRIV_IF.PADDR		<= 0;	
-  	  	repeat(2)@(posedge vif.DRIVER.PCLK);
+  	  	repeat(2)@(posedge vifapb.DRIVER.PCLK);
   	  	if(req.PADDR == 0 || req.PADDR == 1 || req.PADDR == 2 || req.PADDR == 3 || req.PADDR == 4) 
   	  	begin
 			`DRIV_IF.PSELx		<= 1;
-			@(posedge vif.DRIVER.PCLK);
+			@(posedge vifapb.DRIVER.PCLK);
 			`DRIV_IF.PENABLE	<= 1;
   	  	    `DRIV_IF.PWRITE		<= req.PWRITE;
   	  	    `DRIV_IF.PWDATA		<= req.PWDATA;
@@ -79,27 +74,11 @@ class apb_driver extends uvm_driver #(apb_transaction);
  		else if(req.PADDR == 5)
   	  	begin
 			`DRIV_IF.PSELx		<= 1;
-			@(posedge vif.DRIVER.PCLK);
+			@(posedge vifapb.DRIVER.PCLK);
 			`DRIV_IF.PENABLE	<= 1;
   	  	    `DRIV_IF.PWRITE		<= req.PWRITE;
   	  	    `DRIV_IF.PWDATA		<= req.PWDATA;
   	  	    `DRIV_IF.PADDR		<= req.PADDR;
-  	 // 	  	 vif.rec_temp 		<= req.rec_temp;
-  	 // 	  	 vif.fpn_flag 		<= req.fpn_flag;
-  	 /* 	    @(posedge vif.PCLK); 
-
-          	 trans_collected_drv.PADDR   <= req.PADDR;
-          	 trans_collected_drv.rec_temp <= req.rec_temp;
-          	 trans_collected_drv.fpn_flag <= req.fpn_flag;
-  	  	    @(posedge vif.PCLK); 
-
-  	  	  	repeat(48) 
-			begin
-              repeat(326*16)@(posedge vif.DRIVER.PCLK); // 16*6
-  	  	  			`DRIV_IF.RX 	<= req.rec_temp[bcount];
-  	  	  		bcount++;
-  	  	  	end	
-	*/
   	  	end
 		item_collected_port.write(trans_collected); // It sends the transaction non-blocking and it
   	endtask

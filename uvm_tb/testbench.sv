@@ -10,25 +10,27 @@ module tbench_top;
     #10 PRESETn = 1;
   end
 
-  apbuart_if vif (PCLK,PRESETn);
+  apb_if  vifapb  (PCLK,PRESETn);
+  uart_if vifuart (PCLK,PRESETn);
 
   apb_uart_top  DUT (
-                 	.PCLK(vif.PCLK),
-                 	.PRESETn(vif.PRESETn),
-	             	.PSELx(vif.PSELx),
-	             	.PENABLE(vif.PENABLE),
-	             	.PWRITE(vif.PWRITE),
-	             	.Tx(vif.Tx),
-	             	.RX(vif.RX),
-	             	.PREADY(vif.PREADY),
-	             	.PSLVERR(vif.PSLVERR),
-	             	.PWDATA(vif.PWDATA),
-	             	.PADDR(vif.PADDR),
-	             	.PRDATA(vif.PRDATA)
-                	);
+                 	  .PCLK(vifapb.PCLK),
+                 	  .PRESETn(vifapb.PRESETn),
+	             	    .PSELx(vifapb.PSELx),
+	             	    .PENABLE(vifapb.PENABLE),
+	             	    .PWRITE(vifapb.PWRITE),
+	             	    .Tx(vifuart.Tx),
+	             	    .RX(vifuart.RX),
+	             	    .PREADY(vifapb.PREADY),
+	             	    .PSLVERR(vifapb.PSLVERR),
+	             	    .PWDATA(vifapb.PWDATA),
+	             	    .PADDR(vifapb.PADDR),
+	             	    .PRDATA(vifapb.PRDATA)
+                	  );
   initial 
   begin 
-    uvm_config_db # (virtual apbuart_if)::set(uvm_root::get(),"*","vif",vif);
+    uvm_config_db # (virtual apb_if)::set(uvm_root::get(),"*","vifapb",vifapb);
+    uvm_config_db # (virtual uart_if)::set(uvm_root::get(),"*","vifuart",vifuart);
     $dumpfile("dump.vcd"); 
     $dumpvars;
   end

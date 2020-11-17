@@ -1,4 +1,4 @@
-`define MON_IF vif.MONITOR.monitor_cb
+`define MON_IF vifuart.MONITOR.monitor_cb
 
 class uart_monitor extends uvm_monitor;
   
@@ -7,13 +7,13 @@ class uart_monitor extends uvm_monitor;
   	// ---------------------------------------
   	//  Virtual Interface
   	// ---------------------------------------
-  	virtual uart_if vif;
+  	virtual uart_if vifuart;
   
   	// ---------------------------------------
   	// analysis port, to send the transaction
   	// to scoreboard
   	// ---------------------------------------
-  	uvm_analysis_port #(uart_transaction) item_collected_port;
+  	uvm_analysis_port #(uart_transaction) item_collected_port_mon;
   
   	// ------------------------------------------------------------------------
   	// The following property holds the transaction information currently
@@ -27,7 +27,7 @@ class uart_monitor extends uvm_monitor;
   	function new (string name, uvm_component parent);
   	  	super.new(name, parent);
   	  	trans_collected = new();
-  	  	item_collected_port = new("item_collected_port", this);
+  	  	item_collected_port_mon = new("item_collected_port_mon", this);
   	endfunction : new
 
   	// -----------------------------------------------
@@ -35,8 +35,8 @@ class uart_monitor extends uvm_monitor;
   	// -----------------------------------------------
   	function void build_phase(uvm_phase phase);
   		super.build_phase(phase);
-  	  	if(!uvm_config_db#(virtual uart_if)::get(this, "", "vif", vif))
-  	    	`uvm_fatal("NOVIF",{"virtual interface must be set for: ",get_full_name(),".vif"});
+  	  	if(!uvm_config_db#(virtual uart_if)::get(this, "", "vifuart", vifuart))
+  	    	`uvm_fatal("NOVIF",{"virtual interface must be set for: ",get_full_name(),".vifuart"});
   	endfunction: build_phase
 	
 	logic [6:0] count;
@@ -49,21 +49,21 @@ class uart_monitor extends uvm_monitor;
     	count = 0;
     	forever 
      	begin
-          repeat(2)@(posedge vif.MONITOR.PCLK);
+          repeat(2)@(posedge vifuart.MONITOR.PCLK);
 		repeat(48) begin ///////////////////// check if it is to be 48 or 47 
 			if(count == 1'b0) begin
           			wait(!`MON_IF.Tx);
-          		    	@(posedge vif.MONITOR.PCLK);
+          		    	@(posedge vifuart.MONITOR.PCLK);
 				trans_collected.transmitter_reg[count]          = `MON_IF.Tx;
           		    	count=count+1;
           		end  
           		else begin
-          		    	repeat(5208)@(posedge vif.MONITOR.PCLK);
+          		    	repeat(5208)@(posedge vifuart.MONITOR.PCLK);
 				trans_collected.transmitter_reg[count]          = `MON_IF.Tx;
 				count=count+1;				  
 			end
 		end
-      	item_collected_port.write(trans_collected); // It sends the transaction non-blocking and it sends to all connected export 
+      	item_collected_port_mon.write(trans_collected); // It sends the transaction non-blocking and it sends to all connected export 
      	end
   	endtask : run_phase
 endclass

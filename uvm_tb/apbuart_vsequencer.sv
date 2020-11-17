@@ -7,7 +7,7 @@ class vsequencer extends uvm_sequencer;
     endfunction
     function void end_of_elaboration_phase(uvm_phase phase);
         super.end_of_elaboration_phase(phase);
-        if (!uvm_config_db#(apbuart_sequencer)::get(this, "", "apb_sqr", apb_sqr))
+        if (!uvm_config_db#(apb_sequencer)::get(this, "", "apb_sqr", apb_sqr))
             `uvm_fatal("VSQR/CFG/NOAHB", "No ahb_sqr specified for this instance");
         if (!uvm_config_db#(uart_sequencer)::get(this, "", "uart_sqr", uart_sqr))
             `uvm_fatal("VSQR/CFG/NOETH", "No eth_sqr specified for this instance");
