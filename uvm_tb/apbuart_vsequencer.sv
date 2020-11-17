@@ -1,7 +1,7 @@
 class vsequencer extends uvm_sequencer;
    `uvm_component_utils(vsequencer)
-    apbuart_sequencer apb_sqr;
-    uart_sequencer uart_sqr;
+    apb_sequencer   apb_sqr;
+    uart_sequencer  uart_sqr;
     function new(string name, uvm_component parent);
         super.new(name, parent);
     endfunction

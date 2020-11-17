@@ -1,13 +1,13 @@
-class apbuart_agent extends uvm_agent;
+class apb_agent extends uvm_agent;
   
-	`uvm_component_utils(apbuart_agent)
+	`uvm_component_utils(apb_agent)
 
   	// ------------------------------------------------------------
   	//  component instances to make driver , sequencer and monitor 
   	// ------------------------------------------------------------
-  	apbuart_driver    driver;
-  	apbuart_sequencer sequencer;
-  	apbuart_monitor   monitor;
+  	apb_driver    driver;
+  	apb_sequencer sequencer;
+  	apb_monitor   monitor;
   	// ---------------------------------------
   	//  Calling the constructor
   	// ---------------------------------------
@@ -20,12 +20,12 @@ class apbuart_agent extends uvm_agent;
   	// ---------------------------------------------------------------------
   	function void build_phase(uvm_phase phase);
   	  	super.build_phase(phase);
-  	  	monitor = apbuart_monitor::type_id::create("monitor", this);
+  	  	monitor = apb_monitor::type_id::create("monitor", this);
   	  	//creating driver and sequencer only for ACTIVE agent
   	  	if(get_is_active() == UVM_ACTIVE) 
   	  		begin
-  	  	  		driver    = apbuart_driver::type_id::create("driver", this);
-  	  	  		sequencer = apbuart_sequencer::type_id::create("sequencer", this);
+  	  	  		driver    = apb_driver::type_id::create("driver", this);
+  	  	  		sequencer = apb_sequencer::type_id::create("sequencer", this);
   	  	  	end
   	endfunction : build_phase
 	

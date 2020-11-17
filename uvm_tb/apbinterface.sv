@@ -4,8 +4,6 @@ interface apbuart_if (input PCLK, input PRESETn);
     logic           PSELx;
     logic           PENABLE;
     logic           PWRITE;
-    logic           Tx;
-    logic           RX;
     logic           PREADY;
     logic           PSLVERR;
     logic [32-1:0]  PWDATA;
@@ -20,11 +18,9 @@ interface apbuart_if (input PCLK, input PRESETn);
 	output 	PWRITE;
 	output 	PWDATA;
 	output 	PADDR;
-	output 	RX;
  	input  	PRDATA;
 	input  	PREADY;
 	input  	PSLVERR;
-	input	Tx;
   endclocking
   
   clocking monitor_cb @(posedge PCLK);
@@ -34,11 +30,9 @@ interface apbuart_if (input PCLK, input PRESETn);
 	input	PWRITE;
 	input	PWDATA;
 	input	PADDR;
-	input	RX;
  	input	PRDATA;
 	input	PREADY;
 	input	PSLVERR;
-	input	Tx;  
   endclocking
   
   //modports

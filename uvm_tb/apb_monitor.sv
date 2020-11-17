@@ -1,8 +1,8 @@
 `define MON_IF vif.MONITOR.monitor_cb
 
-class apbuart_monitor extends uvm_monitor;
+class apb_monitor extends uvm_monitor;
   
-	`uvm_component_utils(apbuart_monitor)
+	`uvm_component_utils(apb_monitor)
   
   	// ---------------------------------------
   	//  Virtual Interface
@@ -13,13 +13,13 @@ class apbuart_monitor extends uvm_monitor;
   	// analysis port, to `uvm_analysis_imp_decl( _mon ) send the transaction
   	// to scoreboard
   	// ---------------------------------------
-  	uvm_analysis_port #(apbuart_transaction) item_collected_port_mon;
+  	uvm_analysis_port #(apb_transaction) item_collected_port_mon;
   
   	// ------------------------------------------------------------------------
   	// The following property holds the transaction information currently
   	// begin captured by monitor run phase and make it one transaction.
   	// ------------------------------------------------------------------------
-  	apbuart_transaction trans_collected; 
+  	apb_transaction trans_collected; 
 
   	// ---------------------------------------
   	//  new - constructor

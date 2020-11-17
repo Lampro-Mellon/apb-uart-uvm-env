@@ -1,12 +1,12 @@
-class config_apbuart extends uvm_sequence #(apbuart_transaction);
+class config_apbuart extends uvm_sequence #(apb_transaction);
 	`uvm_object_utils (config_apbuart)
-    apbuart_transaction apbuart_sq; 
+    apb_transaction apbuart_sq; 
     function new (string name = "config_apbuart");
         super.new (name);
     endfunction
      
     virtual task body();
-       	apbuart_sq = apbuart_transaction::type_id::create("apbuart_sq");
+       	apbuart_sq = apb_transaction::type_id::create("apbuart_sq");
 	// Write data for Configuring the registers	   
       	`uvm_do_with(apbuart_sq,{
 		  							apbuart_sq.PWRITE == 1'b1;
@@ -55,10 +55,10 @@ class config_apbuart extends uvm_sequence #(apbuart_transaction);
     endtask
 endclass
 
-class transmit_single_beat extends uvm_sequence #(apbuart_transaction);
+class transmit_single_beat extends uvm_sequence #(apb_transaction);
 	
 	`uvm_object_utils (transmit_single_beat)
-	apbuart_transaction apbuart_sq; 
+	apb_transaction apbuart_sq; 
 
     function new (string name = "transmit_single_beat");
         super.new (name);
@@ -66,7 +66,7 @@ class transmit_single_beat extends uvm_sequence #(apbuart_transaction);
 
     // Transmit bit by bit 
     virtual task body();
-        apbuart_sq = apbuart_transaction::type_id::create("apbuart_sq");
+        apbuart_sq = apb_transaction::type_id::create("apbuart_sq");
 		`uvm_do_with(apbuart_sq,{
 		  							apbuart_sq.PWRITE == 1'b1;
                               		apbuart_sq.PADDR  == 32'd4;
@@ -75,9 +75,9 @@ class transmit_single_beat extends uvm_sequence #(apbuart_transaction);
 	endtask  
 endclass
 
-class rec_reg_test extends uvm_sequence#(apbuart_transaction);
+class rec_reg_test extends uvm_sequence#(apb_transaction);
 	`uvm_object_utils(rec_reg_test)
-  	apbuart_transaction	apbuart_sq;
+  	apb_transaction	apbuart_sq;
   
   	function new(string name = "rec_reg_test");
   		super.new(name);
@@ -85,7 +85,7 @@ class rec_reg_test extends uvm_sequence#(apbuart_transaction);
   
   //Test pattern
 	virtual task body();
-		apbuart_sq = apbuart_transaction::type_id::create("apbuart_sq");
+		apbuart_sq = apb_transaction::type_id::create("apbuart_sq");
     	`uvm_do_with(apbuart_sq,{
 		  							apbuart_sq.PWRITE == 1'b0;
                               		apbuart_sq.PADDR  == 32'd5;
@@ -93,9 +93,9 @@ class rec_reg_test extends uvm_sequence#(apbuart_transaction);
   	endtask: body
 endclass: rec_reg_test
 
-class fe_test_apbuart extends uvm_sequence#(apbuart_transaction);
+class fe_test_apbuart extends uvm_sequence#(apb_transaction);
 	`uvm_object_utils(fe_test_apbuart)
-	apbuart_transaction apbuart_sq;
+	apb_transaction apbuart_sq;
   
 	function new(string name = "fe_test_apbuart");
 		super.new(name);
@@ -103,17 +103,17 @@ class fe_test_apbuart extends uvm_sequence#(apbuart_transaction);
   
   //Test pattern
 	virtual task body();
-    	apbuart_sq = apbuart_transaction::type_id::create("apbuart_sq");
+    	apbuart_sq = apb_transaction::type_id::create("apbuart_sq");
 		`uvm_do_with(apbuart_sq,{
 		  							apbuart_sq.PWRITE 	 == 1'b0;
                               		apbuart_sq.PADDR  	 == 32'd5;    //framing Error  
 								}) 
   	endtask: body
-endclass: fe_test
+endclass: fe_test_apbuart
 
-class pe_test_apbuart extends uvm_sequence#(apbuart_transaction);
+class pe_test_apbuart extends uvm_sequence#(apb_transaction);
 	`uvm_object_utils(pe_test_apbuart)
-  	apbuart_transaction apbuart_sq;
+  	apb_transaction apbuart_sq;
   
 	function new(string name = "pe_test_apbuart");
     	super.new(name);
@@ -121,18 +121,18 @@ class pe_test_apbuart extends uvm_sequence#(apbuart_transaction);
   
   //Test pattern
   	virtual task body();
-    	apbuart_sq = apbuart_transaction::type_id::create("apbuart_sq");
+    	apbuart_sq = apb_transaction::type_id::create("apbuart_sq");
 		`uvm_do_with(apbuart_sq,{
 		  							apbuart_sq.PWRITE 	 == 1'b0;
                               		apbuart_sq.PADDR  	 == 32'd5;		//Parity Error  
 								}) 
  	endtask: body
-endclass: pe_test
+endclass: pe_test_apbuart
 
 
-class err_free_test_apbuart extends uvm_sequence#(apbuart_transaction);
+class err_free_test_apbuart extends uvm_sequence#(apb_transaction);
 	`uvm_object_utils(err_free_test_apbuart)
-  	apbuart_transaction apbuart_sq;
+  	apb_transaction apbuart_sq;
   
 	function new(string name = "err_free_test_apbuart");
     	super.new(name);
@@ -140,10 +140,10 @@ class err_free_test_apbuart extends uvm_sequence#(apbuart_transaction);
   
 	//Test pattern
   	virtual task body();
-    	apbuart_sq = apbuart_transaction::type_id::create("apbuart_sq");
+    	apbuart_sq = apb_transaction::type_id::create("apbuart_sq");
 		`uvm_do_with(apbuart_sq,{
 		  							apbuart_sq.PWRITE 	 == 1'b0;
                               		apbuart_sq.PADDR  	 == 32'd5;	// Non-erroneous Data  
 								}) 
   	endtask
-endclass: err_free_test
+endclass: err_free_test_apbuart

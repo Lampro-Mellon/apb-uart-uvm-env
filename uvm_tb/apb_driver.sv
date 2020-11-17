@@ -1,30 +1,30 @@
 `define DRIV_IF vif.DRIVER.driver_cb
 
-class apbuart_driver extends uvm_driver #(apbuart_transaction);
+class apb_driver extends uvm_driver #(apb_transaction);
 	logic [5:0]		bcount = 0;
   
 	virtual apbuart_if	vif;
-  	`uvm_component_utils(apbuart_driver)
+  	`uvm_component_utils(apb_driver)
     
 	function new (string name, uvm_component parent);
 		super.new(name, parent);
 	endfunction : new
   
-  	uvm_analysis_port #(apbuart_transaction) item_collected_port_drv;
+  	uvm_analysis_port #(apb_transaction) item_collected_port_drv;
   
   	// ------------------------------------------------------------------------
   	// The following property holds the transaction information currently
   	// begin captured by monitor run phase and make it one transaction.
   	// ------------------------------------------------------------------------
-  	apbuart_transaction trans_collected_drv; 
+  	apb_transaction trans_collected_drv; 
 
-	uvm_analysis_port #(apbuart_transaction) item_collected_port;
+	uvm_analysis_port #(apb_transaction) item_collected_port;
 	
 	
 	
 	
 	
-  	apbuart_transaction trans_collected; 
+  	apb_transaction trans_collected; 
 
   	//--------------------------------------- 
   	// build phase
@@ -41,7 +41,7 @@ class apbuart_driver extends uvm_driver #(apbuart_transaction);
   	// run phase
   	//---------------------------------------  
   	virtual task run_phase(uvm_phase phase);
-  		apbuart_transaction req;
+  		apb_transaction req;
   	  	forever 
   	  	begin
   	    	@(posedge vif.PCLK iff (vif.PRESETn))
@@ -56,7 +56,7 @@ class apbuart_driver extends uvm_driver #(apbuart_transaction);
   	// drives the value's from seq_item to interface signals
   	//---------------------------------------
 	
-  	virtual task drive(apbuart_transaction req);
+  	virtual task drive(ap_transaction req);
   		`DRIV_IF.PSELx		<= 0;
 		`DRIV_IF.PENABLE	<= 0;  
 		`DRIV_IF.PWRITE		<= 0;

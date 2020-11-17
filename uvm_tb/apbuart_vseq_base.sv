@@ -4,7 +4,7 @@ class vseq_base extends uvm_sequence;
     function new(string name="vseq_base");
         super.new(name);
     endfunction
-    apbuart_sequencer    apb_sqr;
+    apb_sequencer        apb_sqr;
     uart_sequencer       uart_sqr;
     virtual task body();
         apb_sqr = p_sequencer.apb_sqr;

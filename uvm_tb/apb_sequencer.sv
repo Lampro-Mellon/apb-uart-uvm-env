@@ -1,6 +1,6 @@
-class apbuart_sequencer extends uvm_sequencer#(apbuart_transaction);
+class apb_sequencer extends uvm_sequencer#(apb_transaction);
 
-	`uvm_component_utils(apbuart_sequencer) 
+	`uvm_component_utils(apb_sequencer) 
   	//---------------------------------------
   	//constructor
   	//---------------------------------------

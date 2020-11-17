@@ -15,9 +15,9 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	//  declaring pkt_qu to store the pkt's 
   	//  recived from monitor and driver
   	// ---------------------------------------
-  	apbuart_transaction pkt_qu_monapb[$];
+  	apb_transaction 	pkt_qu_monapb[$];
 	uart_transaction 	pkt_qu_monuart[$];
-  	apbuart_transaction pkt_qu_drvapb[$];
+  	apb_transaction 	pkt_qu_drvapb[$];
 	uart_transaction 	pkt_qu_drvuart[$];  
 	
   	// ----------------------------------------------
@@ -45,9 +45,9 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	//  port to recive packets from monitor first argument is transation type and 
   	//  other is defining which subscriber is attached
   	// ------------------------------------------------------------------------------
-    uvm_analysis_imp_monapb 	#(apbuart_transaction, apbuart_scoreboard)	item_collected_export_monapb;
+    uvm_analysis_imp_monapb 	#(apb_transaction, apbuart_scoreboard)	item_collected_export_monapb;
 	uvm_analysis_imp_monuart 	#(uart_transaction, apbuart_scoreboard) 	item_collected_export_monuart;
-  	uvm_analysis_imp_drvapb  	#(apbuart_transaction, apbuart_scoreboard) 	item_collected_export_drvapb;
+  	uvm_analysis_imp_drvapb  	#(apb_transaction, apbuart_scoreboard) 	item_collected_export_drvapb;
 	uvm_analysis_imp_drvuart  	#(uart_transaction, apbuart_scoreboard) 	item_collected_export_drvuart;  
 
   	//---------------------------------------
@@ -72,7 +72,7 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	//  write task - recives the pkt from monitor (APB) 
   	//  and pushes into queue
   	// --------------------------------------------------
-  	virtual function void write_monapb(apbuart_transaction pkt);
+  	virtual function void write_monapb(apb_transaction pkt);
   		pkt_qu_monapb.push_back(pkt); // Pushing the transactions from the end of queue
   	endfunction : write_monapb
   
@@ -80,7 +80,7 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	//  write task - recives the pkt from monitor (UART) 
   	//  and pushes into queue
   	// --------------------------------------------------
-  	virtual function void write_monuart(apbuart_transaction pkt);
+  	virtual function void write_monuart(apb_transaction pkt);
   		pkt_qu_monuart.push_back(pkt); // Pushing the transactions from the end of queue
   	endfunction : write_monuart
   
@@ -88,7 +88,7 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	//  write task - recives the pkt from driver(apb) 
   	//  and pushes into queue
   	// ----------------------------------------------
-  	virtual function void write_drvapb(apbuart_transaction pkt);
+  	virtual function void write_drvapb(apb_transaction pkt);
   		pkt_qu_drvapb.push_back(pkt); // Pushing the transactions from the end of queue
   	endfunction : write_drvapb
 
@@ -105,9 +105,9 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	//  Transmitter register will be updated on value of config address=4 and Tx_detect = 1
   	// --------------------------------------------------------------------------------------
   	virtual task run_phase(uvm_phase phase);
-    	apbuart_transaction apb_pkt_mon;
+    	apb_transaction apb_pkt_mon;
 		uart_transaction 	uart_pkt_mon;
-      	apbuart_transaction apb_pkt_drv;
+      	apb_transaction apb_pkt_drv;
 		uart_transaction 	uart_pkt_drv;
     
     	forever 
@@ -139,7 +139,7 @@ class apbuart_scoreboard extends uvm_scoreboard;
     	end
   	endtask : run_phase
   
-  	function trasmitter_ref_model (apbuart_transaction apb_pkt);
+  	function trasmitter_ref_model (apb_transaction apb_pkt);
   	    checker_transmt_reg[0]      = 1'b0;
   	    checker_transmt_reg[8:1]    = apb_pkt.PWDATA[7:0];
   	    checker_transmt_reg[9]      = ^(apb_pkt.PWDATA[7:0]); 
@@ -161,7 +161,7 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	    checker_transmt_reg[47:46]  = 3; 
   	endfunction  
   
-  	function compare_config (apbuart_transaction apb_pkt);
+  	function compare_config (apb_transaction apb_pkt);
     	if(apb_pkt.PADDR == `baud_config_addr && apb_pkt.PRDATA == `baud_config_reg)
     	begin
     	    `uvm_info(get_type_name(),$sformatf("------ :: Baud Rate Config Match :: ------"),UVM_LOW)
@@ -212,7 +212,7 @@ class apbuart_scoreboard extends uvm_scoreboard;
     	end
   	endfunction  
   
-  	function compare_transmission (apbuart_transaction uart_pkt);  
+  	function compare_transmission (apb_transaction uart_pkt);  
   		if(checker_transmt_reg == uart_pkt.transmitter_reg)
   		begin
   	    	`uvm_info(get_type_name(),$sformatf("------ :: Transmission Data Packet Match :: ------"),UVM_LOW)
@@ -228,11 +228,11 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	endfunction  
   
   
-  	function receive_ref_model (apbuart_transaction uart_pkt); 
+  	function receive_ref_model (apb_transaction uart_pkt); 
   	  	receiver_reg = {uart_pkt.rec_temp[44:37],uart_pkt.rec_temp[32:25],uart_pkt.rec_temp[20:13],uart_pkt.rec_temp[8:1]} ; // reference model for reciving register
 	endfunction  
 	  
-  	function compare_receive (apbuart_transaction apb_pkt , apbuart_transaction uart_pkt); 
+  	function compare_receive (apb_transaction apb_pkt , apb_transaction uart_pkt); 
         if(apb_pkt.PRDATA == receiver_reg)
         begin
         	`uvm_info(get_type_name(),$sformatf("------ :: Reciever Data Packet Match :: ------"),UVM_LOW)
