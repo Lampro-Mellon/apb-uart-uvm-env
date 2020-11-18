@@ -49,20 +49,24 @@ class uart_monitor extends uvm_monitor;
     	count = 0;
     	forever 
      	begin
-          repeat(2)@(posedge vifuart.MONITOR.PCLK);
-		repeat(48) begin ///////////////////// check if it is to be 48 or 47 
-			if(count == 1'b0) begin
+		  	repeat(48) 
+			begin ///////////////////// check if it is to be 48 or 47 
+				if(count == 1'b0) 
+				begin
           			wait(!`MONUART_IF.Tx);
-          		    	@(posedge vifuart.MONITOR.PCLK);
-				trans_collected.transmitter_reg[count]          = `MONUART_IF.Tx;
-          		    	count=count+1;
+          			@(posedge vifuart.MONITOR.PCLK);
+					trans_collected.transmitter_reg[count]	= `MONUART_IF.Tx;
+          			count=count+1;
           		end  
-          		else begin
-          		    	repeat(5208)@(posedge vifuart.MONITOR.PCLK);
-				trans_collected.transmitter_reg[count]          = `MONUART_IF.Tx;
-				count=count+1;				  
+          		else 
+				begin
+          			repeat(5208)@(posedge vifuart.MONITOR.PCLK);
+						@(posedge vifuart.MONITOR.PCLK);
+						trans_collected.transmitter_reg[count]  = `MONUART_IF.Tx;
+					count=count+1;					  
+				end
 			end
-		end
+			count=0;
       	item_collected_port_mon.write(trans_collected); // It sends the transaction non-blocking and it sends to all connected export 
      	end
   	endtask : run_phase

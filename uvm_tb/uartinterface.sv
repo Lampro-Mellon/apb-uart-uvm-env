@@ -3,7 +3,7 @@ interface uart_if (input PCLK, input PRESETn);
   //Signals Declaration 
     logic           Tx;
     logic           RX;
-    
+
   //clocking blocks
   clocking driver_cb @(posedge PCLK);
     default input #1 output #1;	

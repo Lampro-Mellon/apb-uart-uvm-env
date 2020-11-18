@@ -53,33 +53,37 @@ class apb_driver extends uvm_driver #(apb_transaction);
 	
   	virtual task drive(apb_transaction req);
   		`DRIVAPB_IF.PSELx		<= 0;
-		`DRIVAPB_IF.PENABLE	<= 0;  
+		`DRIVAPB_IF.PENABLE		<= 0;  
 		`DRIVAPB_IF.PWRITE		<= 0;
   	  	`DRIVAPB_IF.PWDATA		<= 0;
   	  	`DRIVAPB_IF.PADDR		<= 0;	
   	  	repeat(2)@(posedge vifapb.DRIVER.PCLK);
   	  	if(req.PADDR == 0 || req.PADDR == 1 || req.PADDR == 2 || req.PADDR == 3 || req.PADDR == 4) 
   	  	begin
-			`DRIVAPB_IF.PSELx		<= 1;
+			`DRIVAPB_IF.PSELx			<= 1;
 			@(posedge vifapb.DRIVER.PCLK);
-			`DRIVAPB_IF.PENABLE	<= 1;
-  	  	    `DRIVAPB_IF.PWRITE		<= req.PWRITE;
-  	  	    `DRIVAPB_IF.PWDATA		<= req.PWDATA;
-  	  	    `DRIVAPB_IF.PADDR		<= req.PADDR;
+			`DRIVAPB_IF.PENABLE			<= 1;
+  	  	    `DRIVAPB_IF.PWRITE			<= req.PWRITE;
+  	  	    `DRIVAPB_IF.PWDATA			<= req.PWDATA;
+  	  	    `DRIVAPB_IF.PADDR			<= req.PADDR;
+			trans_collected_drv.PADDR 	 = req.PADDR;
+			trans_collected_drv.PWDATA 	 = req.PWDATA;
+			//$display("Address in Transaction = %d" , trans_collected_drv.PADDR);
 			 wait(`DRIVAPB_IF.PREADY);		
-			`DRIVAPB_IF.PSELx		<= 0;
-			`DRIVAPB_IF.PENABLE	<= 0;
-          	 trans_collected_drv.PADDR <= req.PADDR;
+			`DRIVAPB_IF.PSELx			<= 0;
+			`DRIVAPB_IF.PENABLE			<= 0;
+			//wait(!`DRIVAPB_IF.PREADY);
+			//$display("Address in Transaction = %d" , trans_collected_drv.PADDR);
   	  	end
  		else if(req.PADDR == 5)
   	  	begin
 			`DRIVAPB_IF.PSELx		<= 1;
 			@(posedge vifapb.DRIVER.PCLK);
-			`DRIVAPB_IF.PENABLE	<= 1;
+			`DRIVAPB_IF.PENABLE		<= 1;
   	  	    `DRIVAPB_IF.PWRITE		<= req.PWRITE;
   	  	    `DRIVAPB_IF.PWDATA		<= req.PWDATA;
   	  	    `DRIVAPB_IF.PADDR		<= req.PADDR;
   	  	end
-		item_collected_port.write(trans_collected); // It sends the transaction non-blocking and it
+		item_collected_port_drv.write(trans_collected_drv); // It sends the transaction non-blocking and it
   	endtask
 endclass

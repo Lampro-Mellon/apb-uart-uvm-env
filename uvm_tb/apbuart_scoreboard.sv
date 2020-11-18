@@ -105,9 +105,9 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	//  Transmitter register will be updated on value of config address=4 and Tx_detect = 1
   	// --------------------------------------------------------------------------------------
   	virtual task run_phase(uvm_phase phase);
-    	apb_transaction apb_pkt_mon;
+    	apb_transaction 	apb_pkt_mon;
 		uart_transaction 	uart_pkt_mon;
-      	apb_transaction apb_pkt_drv;
+      	apb_transaction 	apb_pkt_drv;
 		uart_transaction 	uart_pkt_drv;
     
     	forever 
