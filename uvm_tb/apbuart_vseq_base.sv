@@ -52,10 +52,14 @@ class apbuart_recReg_seq extends vseq_base;
     virtual task body();
         config_apbuart apbuart_seq;
         rec_reg_test   apbuart_seq1;
+        recReg_test_uart apbuart_seq2;
         super.body();
         `uvm_info("apbuart_recReg_seq", "Executing sequence", UVM_HIGH)
         `uvm_do_on(apbuart_seq,  apb_sqr)
+        fork
         `uvm_do_on(apbuart_seq1, apb_sqr)
+        `uvm_do_on(apbuart_seq2, uart_sqr)
+        join
         `uvm_info("apbuart_recReg_seq", "Sequence complete", UVM_HIGH)
     endtask
 endclass

@@ -37,7 +37,7 @@ class apbuart_scoreboard extends uvm_scoreboard;
 	`define		stop_bits_config_reg		1         // 1 (Two Stop bits)
 
   	reg [47:0] 	transmitter_reg;   // included 4 frames and partiy bit plus stop bits
-  	reg [47:0] 	checker_transmt_reg ;
+  	reg [47:0] 	checker_transmt_reg;
   	reg [31:0] 	receiver_reg;      // only 4 frames
 	reg [5:0]  	tx_count= 0 ;  
 
@@ -114,7 +114,7 @@ class apbuart_scoreboard extends uvm_scoreboard;
     	begin
           	wait(pkt_qu_drvapb.size() > 0);	    			// checking the fifo that it contains any valid entry from driver
       		apb_pkt_drv = pkt_qu_drvapb.pop_front(); 		// getting the entry from the start of fifo
-          	if(apb_pkt_drv.PADDR == `baud_config_addr || apb_pkt_drv.PADDR == `frame_config_addr || apb_pkt_drv.PADDR == `parity_config_addr || apb_pkt_drv.PADDR == `stop_bits_config_addr)
+          	if(apb_pkt_drv.PWRITE == 0 && (apb_pkt_drv.PADDR == `baud_config_addr || apb_pkt_drv.PADDR == `frame_config_addr || apb_pkt_drv.PADDR == `parity_config_addr || apb_pkt_drv.PADDR == `stop_bits_config_addr))
 			begin
 				wait(pkt_qu_monapb.size() > 0);	    		// checking the fifo that it contains any valid entry from monitor apb
       			apb_pkt_mon = pkt_qu_monapb.pop_front(); 	// getting the entry from the start of fifo
@@ -127,7 +127,7 @@ class apbuart_scoreboard extends uvm_scoreboard;
 				uart_pkt_mon = pkt_qu_monuart.pop_front(); 	// getting the entry from the start of fifo
 				compare_transmission (uart_pkt_mon) ;
 			end
-			else if (apb_pkt_drv.PADDR == `trans_data_addr)
+			else if (apb_pkt_drv.PADDR == `receive_data_addr)
 			begin
 				wait(pkt_qu_drvuart.size() > 0);	    	// checking the fifo that it contains any valid entry from driver
       			uart_pkt_drv = pkt_qu_drvuart.pop_front(); 	// getting the entry from the start of fifo

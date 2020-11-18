@@ -49,40 +49,20 @@ class apb_monitor extends uvm_monitor;
     	count = 0;
     	forever 
      	begin
-          repeat(2)@(posedge vifapb.MONITOR.PCLK);
-       		wait(`MONAPB_IF.PENABLE);
-       		if(`MONAPB_IF.PWRITE == 1 && (`MONAPB_IF.PADDR == 0 || `MONAPB_IF.PADDR == 1 || `MONAPB_IF.PADDR == 2 || `MONAPB_IF.PADDR == 3)) 
-        	begin
-            	trans_collected.PWRITE 		= `MONAPB_IF.PWRITE;
-        		trans_collected.PADDR 		= `MONAPB_IF.PADDR;
-        		trans_collected.PWDATA		= `MONAPB_IF.PWDATA;
-            	@(posedge vifapb.MONITOR.PCLK);
+       		wait(`MONAPB_IF.PSELx && `MONAPB_IF.PENABLE);
+      		wait(`MONAPB_IF.PREADY || `MONAPB_IF.PSLVERR);
+      		if(`MONAPB_IF.PSLVERR) 
+      		begin
+      			trans_collected.PSLVERR = `MONAPB_IF.PSLVERR;
+      			wait(`MONAPB_IF.PREADY);
       		end
-      		else if(`MONAPB_IF.PWRITE == 0 && (`MONAPB_IF.PADDR == 0 || `MONAPB_IF.PADDR == 1 || `MONAPB_IF.PADDR == 2 || `MONAPB_IF.PADDR == 3)) 
-        	begin
-        		trans_collected.PWRITE		= `MONAPB_IF.PWRITE;
-        		trans_collected.PWDATA		=  0;
-            	wait( `MONAPB_IF.PREADY);
-          		trans_collected.PADDR 		= `MONAPB_IF.PADDR;
-        		trans_collected.PRDATA 		= `MONAPB_IF.PRDATA;
-                wait(!`MONAPB_IF.PREADY);
-      		end
-      		else if(`MONAPB_IF.PWRITE == 0 && `MONAPB_IF.PADDR == 5) 
-      			begin
-      		    	trans_collected.PADDR 		=  vifapb.PADDR;
-      		    	wait(`MONAPB_IF.PREADY || `MONAPB_IF.PSLVERR);
-      		    	if(`MONAPB_IF.PSLVERR) 
-      		      	begin
-      		        	trans_collected.PSLVERR = `MONAPB_IF.PSLVERR;
-      		        	wait(`MONAPB_IF.PREADY);
-      		      	end
-      		    	else
-      		        	trans_collected.PSLVERR = `MONAPB_IF.PSLVERR;
-
-				trans_collected.PRDATA 		= `MONAPB_IF.PRDATA;
-				trans_collected.PREADY 		= `MONAPB_IF.PREADY;	  
-			wait(!`MONAPB_IF.PREADY);
-      		    end  
+      		else
+      			trans_collected.PSLVERR = `MONAPB_IF.PSLVERR;
+				  
+			trans_collected.PADDR 		= `MONAPB_IF.PADDR;		  
+			trans_collected.PRDATA 		= `MONAPB_IF.PRDATA;
+			trans_collected.PREADY 		= `MONAPB_IF.PREADY;	  
+			wait(!`MONAPB_IF.PREADY);   
       		item_collected_port_mon.write(trans_collected); // It sends the transaction non-blocking and it sends to all connected export 
      	end
   	endtask : run_phase

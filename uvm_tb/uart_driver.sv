@@ -43,14 +43,14 @@ class uart_driver extends uvm_driver #(uart_transaction);
   	//---------------------------------------
 	
   	virtual task drive(uart_transaction req);
-		`DRIVUART_IF.RX	<= 1;
-  	  	repeat(2)@(posedge vifuart.DRIVER.PCLK);
-  	  	    @(posedge vifuart.PCLK); 
-  	  	  	repeat(48) 
-			begin
-  	  	    	repeat(326*16)@(posedge vifuart.DRIVER.PCLK);
-  	  	  			`DRIVUART_IF.RX 	<= req.rec_temp[bcount];
-  	  	  		bcount++;
+	  	trans_collected.rec_temp 	= req.rec_temp;
+		trans_collected.fpn_flag 	= req.fpn_flag;  
+		`DRIVUART_IF.RX				<= 1;
+  	  	repeat(48) 
+		begin
+  	  		repeat(5208)@(posedge vifuart.DRIVER.PCLK);
+  	  			`DRIVUART_IF.RX 	<= req.rec_temp[bcount];
+  	  		bcount++;
   	  	end
 		item_collected_port_drv.write(trans_collected); // It sends the transaction non-blocking and it
   	endtask

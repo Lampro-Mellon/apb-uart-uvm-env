@@ -41,10 +41,10 @@ class uart_monitor extends uvm_monitor;
 	
 	logic [6:0] count;
   
-  	//------------------------------------------------------------------------------------
+  	// ------------------------------------------------------------------------------------
   	// run_phase - convert the signal level activity to transaction level.
   	// i.e, sample the values on interface signal ans assigns to transaction class fields
-  	//------------------------------------------------------------------------------------
+  	// ------------------------------------------------------------------------------------
   	virtual task run_phase(uvm_phase phase);
     	count = 0;
     	forever 

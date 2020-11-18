@@ -21,6 +21,23 @@ class uart_sequence extends uvm_sequence#(uart_transaction);
     endtask
 endclass
 
+class recReg_test_uart extends uvm_sequence#(uart_transaction);
+	`uvm_object_utils(recReg_test_uart)
+	uart_transaction uart_sq;
+  
+	function new(string name = "recReg_test_uart");
+		super.new(name);
+  endfunction: new
+  
+  //Test pattern
+	virtual task body();
+    	uart_sq = uart_transaction::type_id::create("uart_sq");
+		`uvm_do_with(uart_sq,{
+									uart_sq.fpn_flag  == 2'h0;
+								}) 
+  	endtask: body
+endclass: recReg_test_uart
+
 class fe_test_uart extends uvm_sequence#(uart_transaction);
 	`uvm_object_utils(fe_test_uart)
 	uart_transaction uart_sq;
