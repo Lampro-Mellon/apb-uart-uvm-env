@@ -9,8 +9,7 @@ class apbuart_env extends uvm_env;
     uart_agent          uart_agnt;
     apbuart_scoreboard  apbuart_scb;
     vsequencer          v_sqr;
-    
-
+   
     // --------------------------------------- 
     //  Calling the constructor
     // ---------------------------------------
@@ -28,6 +27,7 @@ class apbuart_env extends uvm_env;
       	apbuart_scb     = apbuart_scoreboard::type_id::create("apbuart_scb", this);
         v_sqr           = vsequencer::type_id::create("v_sqr",this);
     endfunction : build_phase
+
 
     // ------------------------------------------------------------
     //  connect_phase - connecting monitor and scoreboard port

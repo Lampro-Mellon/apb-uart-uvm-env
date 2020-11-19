@@ -9,6 +9,7 @@
 ./../uvm_tb/uartinterface.sv 
 ./../uvm_tb/apb_transaction.sv 
 ./../uvm_tb/uart_transaction.sv 
+./../uvm_tb/uart_config.sv 
 ./../uvm_tb/apb_sequence.sv 
 ./../uvm_tb/uart_sequence.sv 
 ./../uvm_tb/apb_sequencer.sv 

@@ -8,6 +8,7 @@ class uart_agent extends uvm_agent;
   	uart_driver    driver;
   	uart_sequencer sequencer;
   	uart_monitor   monitor;
+	//uart_config    cfg;  
   	// ---------------------------------------
   	//  Calling the constructor
   	// ---------------------------------------
@@ -36,4 +37,11 @@ class uart_agent extends uvm_agent;
   		if(get_is_active() == UVM_ACTIVE) 
   	    	driver.seq_item_port.connect(sequencer.seq_item_export);
   	endfunction : connect_phase
+
+	/*function void update_config(uart_config cfg);
+	monitor.cfg = cfg;
+	if(get_is_active() == UVM_ACTIVE)  
+		driver.cfg = cfg;
+	endfunction
+	*/	  
 endclass

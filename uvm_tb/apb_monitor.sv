@@ -34,7 +34,7 @@ class apb_monitor extends uvm_monitor;
   	//  build_phase - getting the interface handle
   	// -----------------------------------------------
   	function void build_phase(uvm_phase phase);
-  		super.build_phase(phase);
+  		super.build_phase(phase); 
   	  	if(!uvm_config_db#(virtual apb_if)::get(this, "", "vifapb", vifapb))
   	    	`uvm_fatal("NOVIF",{"virtual interface must be set for: ",get_full_name(),".vifapb"});
   	endfunction: build_phase

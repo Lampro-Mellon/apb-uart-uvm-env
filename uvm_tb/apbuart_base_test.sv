@@ -2,14 +2,35 @@ class apbuart_base_test extends uvm_test;
 	`uvm_component_utils(apbuart_base_test)
 
    	apbuart_env env_sq;
+	uart_config	cfg;   
   
   	function new (string name="apbuart_base_test", uvm_component parent = null);
     	super.new(name,parent);
  	endfunction
 
+	function void set_config_params(input [3:0] frm_len , input sb , input [1:0] parity , input [31:0] bd_rate , input flag);
+		cfg = new();
+		if(flag)
+		begin
+			if (!cfg.randomize()) 
+				`uvm_error("RNDFAIL", "Demo Config Randomization")	
+		end
+		else
+		begin
+			cfg.frame_len 	= frm_len;
+			cfg.n_sb 		= sb;
+			cfg.parity		= parity;
+			cfg.bRate		= bd_rate;
+		end
+		cfg.baudRateFunc();	
+    	cfg.print();
+		uvm_config_db#(uart_config)::set(this,"*","cfg",cfg);
+	endfunction 
+
   	virtual function void build_phase(uvm_phase phase);
   		super.build_phase(phase);
-			env_sq = apbuart_env::type_id::create("env_sq",this);
+		env_sq = apbuart_env::type_id::create("env_sq",this);
+		set_config_params(8,1,3,9600,0);  // fram len , sb , parity , bd rate , flag (randomize or directed)
   	endfunction
 
   	virtual function void end_of_elaboration();

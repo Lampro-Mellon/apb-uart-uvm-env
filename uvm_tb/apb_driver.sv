@@ -21,11 +21,16 @@ class apb_driver extends uvm_driver #(apb_transaction);
 	uvm_analysis_port #(apb_transaction) item_collected_port;
   	apb_transaction trans_collected; 
 
+	// Handle to  a cfg class
+  	uart_config 	cfg;   
+
   	//--------------------------------------- 
   	// build phase
   	//---------------------------------------
   	function void build_phase(uvm_phase phase);
   		super.build_phase(phase);
+		if(!uvm_config_db#(uart_config)::get(this, "", "cfg", cfg))
+			`uvm_fatal("No cfg",{"Configuration must be set for: ",get_full_name(),".cfg"});  
   	   	if(!uvm_config_db#(virtual apb_if)::get(this, "", "vifapb", vifapb))
   	    	`uvm_fatal("NO_VIF",{"virtual interface must be set for: ",get_full_name(),".vifapb"});
       	trans_collected_drv = new();
@@ -70,6 +75,6 @@ class apb_driver extends uvm_driver #(apb_transaction);
 			`DRIVAPB_IF.PSELx			<= 0;
 			`DRIVAPB_IF.PENABLE			<= 0;
 			wait(!`DRIVAPB_IF.PREADY);
-		item_collected_port_drv.write(trans_collected_drv); // It sends the transaction non-blocking and it
+			item_collected_port_drv.write(trans_collected_drv); // It sends the transaction non-blocking and it
   	endtask
 endclass

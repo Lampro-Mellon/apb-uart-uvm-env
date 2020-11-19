@@ -4,19 +4,22 @@ class uart_driver extends uvm_driver #(uart_transaction);
 	logic [5:0]		bcount = 0;
   
 	virtual uart_if	vifuart;
+	uart_config 	cfg;
   	`uvm_component_utils(uart_driver)
-    
+
 	function new (string name, uvm_component parent);
 		super.new(name, parent);
 	endfunction : new
-  	uvm_analysis_port #(uart_transaction) item_collected_port_drv;
-	uart_transaction trans_collected; 
+  	uvm_analysis_port #(uart_transaction) 	item_collected_port_drv;
+	uart_transaction 						trans_collected; 
 
   	//--------------------------------------- 
   	// build phase
   	//---------------------------------------
   	function void build_phase(uvm_phase phase);
   		super.build_phase(phase);
+		if(!uvm_config_db#(uart_config)::get(this, "", "cfg", cfg))
+			`uvm_fatal("No cfg",{"Configuration must be set for: ",get_full_name(),".cfg"});  
   	   	if(!uvm_config_db#(virtual uart_if)::get(this, "", "vifuart", vifuart))
   	    	`uvm_fatal("NO_VIF",{"virtual interface must be set for: ",get_full_name(),".vifuart"});
 			trans_collected = new();
@@ -43,6 +46,7 @@ class uart_driver extends uvm_driver #(uart_transaction);
   	//---------------------------------------
 	
   	virtual task drive(uart_transaction req);
+	  	//$display("Config Frame Length = 0h" , cfg.frame_len);
 	  	trans_collected.rec_temp 	= req.rec_temp;
 		trans_collected.fpn_flag 	= req.fpn_flag;  
 		`DRIVUART_IF.RX				<= 1;

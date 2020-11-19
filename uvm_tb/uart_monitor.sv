@@ -3,12 +3,14 @@
 class uart_monitor extends uvm_monitor;
   
 	`uvm_component_utils(uart_monitor)
-  
+
   	// ---------------------------------------
   	//  Virtual Interface
   	// ---------------------------------------
   	virtual uart_if vifuart;
-  
+
+	// Handle to  a cfg class
+  	uart_config 	cfg; 
   	// ---------------------------------------
   	// analysis port, to send the transaction
   	// to scoreboard
@@ -35,9 +37,11 @@ class uart_monitor extends uvm_monitor;
   	// -----------------------------------------------
   	function void build_phase(uvm_phase phase);
   		super.build_phase(phase);
+		if(!uvm_config_db#(uart_config)::get(this, "", "cfg", cfg))
+			`uvm_fatal("No cfg",{"Configuration must be set for: ",get_full_name(),".cfg"});    
   	  	if(!uvm_config_db#(virtual uart_if)::get(this, "", "vifuart", vifuart))
   	    	`uvm_fatal("NOVIF",{"virtual interface must be set for: ",get_full_name(),".vifuart"});
-  	endfunction: build_phase
+	endfunction: build_phase
 	
 	logic [6:0] count;
   
