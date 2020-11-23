@@ -9,9 +9,9 @@ class apb_transaction extends uvm_sequence_item;
 	rand logic [31 : 0]	  	PADDR;
 	
     // Output Signals of DUT for APB UART's transaction
-	logic				PREADY;
-	logic 				PSLVERR;
-    logic [31: 0]		PRDATA;
+	logic				    PREADY;
+	logic 				    PSLVERR;
+    logic [31: 0]		    PRDATA;
     
     // Constructor Define Method
     function  new (string name = "apb_transaction");
