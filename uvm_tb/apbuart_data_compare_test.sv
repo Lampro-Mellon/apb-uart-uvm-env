@@ -20,7 +20,7 @@ endfunction
 task apbuart_data_compare_test::run_phase(uvm_phase phase);
   repeat(50)
   begin
-    super.set_config_params(6,0,3,9600,1);
+    set_config_params(9600,8,3,1,1); // Baud Rate , Frame Len , Parity , Stop Bit , Randomize Flag (1 for random , 0 for directed)
 	  cfg.print();
     phase.raise_objection (.obj(this));
   	apbuart_sq.start(env_sq.v_sqr);

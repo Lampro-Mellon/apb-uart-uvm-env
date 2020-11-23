@@ -50,7 +50,6 @@ endfunction: connect_phase
 // run phase
 // --------------------------------------- 
 task uart_driver::run_phase(uvm_phase phase);
-  cfg_settings();     //setting LT value LT: Loop Time
 	get_and_drive();
 endtask : run_phase
 
@@ -65,7 +64,7 @@ task uart_driver::cfg_settings();
 	  8:		LT =4;
     9:		LT =4;
 		default:	 `uvm_error(get_type_name(),$sformatf("------ :: Incorrect frame length selected :: ------"))
-	endcase
+  endcase
 endtask
 
 // ---------------------------------------  
@@ -77,7 +76,12 @@ task uart_driver::get_and_drive();
 	begin
 	  @(posedge vifuart.PCLK iff (vifuart.PRESETn))
 	  seq_item_port.get_next_item(req);
+    trans_collected.payload = req.payload;
+    trans_collected.bad_parity = req.bad_parity;
+    trans_collected.sb_corr = req.sb_corr;
+    cfg_settings();
 	  drive_rx(req);
+    item_collected_port_drv.write(trans_collected);
 	  seq_item_port.item_done();
 	end
 endtask : get_and_drive
@@ -89,35 +93,35 @@ endtask : get_and_drive
 //---------------------------------------
 
 task uart_driver::drive_rx(uart_transaction req);
-
   // ------Transmitter Model ------//
   logic [3:0] no_bits_sent = 0;
   logic [5:0] pay_offset = 0;
   logic [3:0] parity_of_frame = 0;
   logic [6:0] temp;                                                                       //for storing parity bits of all max 7 frames
-
-  repeat (LT) begin                                                                       // to determine how we get LT 
-      while (no_bits_sent <= 1 + cfg.frame_len + cfg.parity[1] + (cfg.n_sb+1)) 
+  for(int i=0;i<LT;i++) 
+  begin
+      while (no_bits_sent < ((1 + cfg.frame_len + cfg.parity[1] + (cfg.n_sb+1)) )) 
       begin
         repeat(cfg.baud_rate)@(posedge vifuart.PCLK);                                  //waiting for baud rate pulse
         if (no_bits_sent == 0) 
         begin
-          `DRIVUART_IF.RX <= req.start_bit;                                                // sending start bit
-           no_bits_sent++;
+          `DRIVUART_IF.RX <= req.start_bit;
+          no_bits_sent++;
         end 
-        else if (no_bits_sent > 0 && no_bits_sent < (1 + cfg.frame_len)) 
+        else if ((no_bits_sent > 0) && (no_bits_sent < (1 + cfg.frame_len))) 
         begin
           `DRIVUART_IF.RX <= req.payload[pay_offset + (no_bits_sent-1)];                   // sending data bits
           no_bits_sent++;
         end 
-        else if (no_bits_sent < (1+cfg.frame_len) && cfg.parity[1]) 
+        else if ((no_bits_sent == (1+cfg.frame_len)) && cfg.parity[1]) 
         begin
           temp = req.calc_parity(req.payload,cfg.frame_len, req.bad_parity, cfg.parity[0]);           //bad_parity is in sequence
           `DRIVUART_IF.RX <= temp[parity_of_frame];
+        //  $display("parity of frame %b",temp[parity_of_frame]);
           parity_of_frame++;                                                              //sending parity bit
           no_bits_sent++;
         end 
-        else if (no_bits_sent == (1+cfg.frame_len) && cfg.parity[1]) 
+        else //if (no_bits_sent == (1+cfg.frame_len) && cfg.parity[1]) 
         begin
           for (int i=0; i <= cfg.n_sb; i++) 
           begin
@@ -143,6 +147,5 @@ task uart_driver::drive_rx(uart_transaction req);
       pay_offset += cfg.frame_len;
       no_bits_sent = 0;
   end
-
 endtask: drive_rx
 

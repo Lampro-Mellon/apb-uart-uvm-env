@@ -44,7 +44,9 @@ endclass: err_free_test_uart
 
 task recReg_test_uart::body();
 	uart_sq = uart_transaction::type_id::create("uart_sq");
-	`uvm_do(uart_sq);
+	`uvm_do_with(uart_sq,{
+							uart_sq.sb_corr 	== 1'b0;  
+						 }) 
 endtask: body
 
 task fe_test_uart::body();
@@ -52,7 +54,6 @@ task fe_test_uart::body();
 	`uvm_do_with(uart_sq,{
 							uart_sq.bad_parity  == 1'b0;
 							uart_sq.sb_corr 	== 1'b1;  
-							uart_sq.payload  	== 32'hAA8AA8AA;		//framing Error
 						 }) 
 endtask: body
 
@@ -61,7 +62,6 @@ task pe_test_uart::body();
 	`uvm_do_with(uart_sq,{
 							uart_sq.bad_parity  == 1'b1;
 							uart_sq.sb_corr 	== 1'b0;  
-							uart_sq.payload  	== 32'hAA8AA8AA;		//Parity Error  
 						 }) 
 endtask: body
 
@@ -70,6 +70,5 @@ task err_free_test_uart::body();
 	`uvm_do_with(uart_sq,{
 							uart_sq.bad_parity  == 1'b0;
 							uart_sq.sb_corr 	== 1'b0;  
-							uart_sq.payload  	== 32'hAA8AA8AA;		// Non-erroneous Data  
 						 }) 
 endtask

@@ -18,14 +18,12 @@ function void apbuart_config_test::build_phase (uvm_phase phase);
 endfunction
 
 task apbuart_config_test::run_phase(uvm_phase phase);
-	repeat(2000)
+	repeat(50)
 	begin
-		set_config_params(8,1,3,9600,1);
+		set_config_params(9600,8,3,1,1); // Baud Rate , Frame Len , Parity , Stop Bit , Randomize Flag (1 for random , 0 for directed)
 		cfg.print();
 		phase.raise_objection(.obj(this));
-		`uvm_info("test1 run", "Starting Configuration test", UVM_MEDIUM)
 		apbuart_sq.start(env_sq.v_sqr);
-		`uvm_info("test1 run", "Ending Configuration test",   UVM_MEDIUM)
 		phase.drop_objection(.obj(this));
 	end
     	phase.phase_done.set_drain_time(this, 20);

@@ -9,7 +9,7 @@ class apbuart_base_test extends uvm_test;
  	endfunction
 
 	extern virtual function void build_phase(uvm_phase phase);
-  	extern virtual function void set_config_params(input [3:0] frm_len , input sb , input [1:0] parity , input [31:0] bd_rate , input flag);
+  	extern virtual function void set_config_params(input [31:0] bd_rate , input [3:0] frm_len , input [1:0] parity , input sb , input flag);
   	extern virtual function void end_of_elaboration();
   	extern virtual function void report_phase(uvm_phase phase);
 endclass
@@ -19,14 +19,14 @@ function void apbuart_base_test::build_phase(uvm_phase phase);
 	env_sq = apbuart_env::type_id::create("env_sq",this);
 	cfg = new();
 	uvm_config_db#(uart_config)::set(this,"*","cfg",cfg);
-	set_config_params(6,0,3,9600,0);
+	set_config_params(9600,8,3,1,0); // Baud Rate , Frame Len , Parity , Stop Bit , Randomize Flag (1 for random , 0 for directed)
 endfunction
 
-function void apbuart_base_test::set_config_params(input [3:0] frm_len , input sb , input [1:0] parity , input [31:0] bd_rate , input flag);
+function void apbuart_base_test::set_config_params(input [31:0] bd_rate , input [3:0] frm_len , input [1:0] parity , input sb , input flag);
 	if(flag)
 	begin
 		if (!cfg.randomize()) 
-			`uvm_error("RNDFAIL", "Demo Config Randomization")	
+			`uvm_error("RNDFAIL", " Config Randomization")	
 	end
 	else
 	begin
