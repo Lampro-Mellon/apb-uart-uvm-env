@@ -113,7 +113,6 @@ task uart_monitor::monitor_and_send ();
 		end
 	end
 	trans_collected.transmitter_reg=receive_reg;
-	trans_collected.print();  
 	item_collected_port_mon.write(trans_collected); // It sends the transaction non-blocking and it sends to all connected export 
 	receive_reg = 32'hx;
 endtask

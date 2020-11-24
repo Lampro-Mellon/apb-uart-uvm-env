@@ -6,7 +6,9 @@ module tbench_top;
   always #5 PCLK = ~PCLK;
   
   initial begin
-    PRESETn 	= 0;
+    PRESETn 	  = 1;
+    #10
+    PRESETn 	  = 0;
     #10 PRESETn = 1;
   end
 

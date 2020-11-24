@@ -25,12 +25,14 @@ run_cov_all:
 				cp -rf simv.vdb $$i/; \
 				mv $$i.log $$i/; \
 			done
-			urg -dir *_test/*.vdb 	
+			urg -dir *_test/*.vdb -elfile exclusion.el -excl_bypass_checks	
 
 run-test:
 			@echo "Running $(TEST) Test"
 			./simv -l ${TEST}.log +UVM_TIMEOUT=900000000 +UVM_TESTNAME=${TEST}
 
+dve: 		
+			dve -covdir *_test/*.vdb &
 
 clean:
 			@echo "Cleaning up...."

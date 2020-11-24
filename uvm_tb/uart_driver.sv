@@ -74,7 +74,6 @@ task uart_driver::get_and_drive();
 	uart_transaction req;
 	forever 
 	begin
-    `DRIVUART_IF.RX <=1'b1;
 	  @(posedge vifuart.PCLK iff (vifuart.PRESETn))
 	  seq_item_port.get_next_item(req);
     trans_collected.payload = req.payload;
@@ -99,6 +98,7 @@ task uart_driver::drive_rx(uart_transaction req);
   logic [5:0] pay_offset = 0;
   logic [3:0] parity_of_frame = 0;
   logic [6:0] temp;                                                                       //for storing parity bits of all max 7 frames
+  temp = req.calc_parity(req.payload,cfg.frame_len, req.bad_parity, cfg.parity[0]); 
   for(int i=0;i<LT;i++) 
   begin
       while (no_bits_sent < ((1 + cfg.frame_len + cfg.parity[1] + (cfg.n_sb+1)) )) 
@@ -116,7 +116,7 @@ task uart_driver::drive_rx(uart_transaction req);
         end 
         else if ((no_bits_sent == (1+cfg.frame_len)) && cfg.parity[1]) 
         begin
-          temp = req.calc_parity(req.payload,cfg.frame_len, req.bad_parity, cfg.parity[0]);           //bad_parity is in sequence
+        //  temp = req.calc_parity(req.payload,cfg.frame_len, req.bad_parity, cfg.parity[0]);           //bad_parity is in sequence
           `DRIVUART_IF.RX <= temp[parity_of_frame];
         //  $display("parity of frame %b",temp[parity_of_frame]);
           parity_of_frame++;                                                              //sending parity bit
