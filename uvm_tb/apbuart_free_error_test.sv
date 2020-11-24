@@ -18,10 +18,8 @@ function void apbuart_free_error_test::build_phase (uvm_phase phase);
 endfunction
 
 task apbuart_free_error_test::run_phase(uvm_phase phase);
-    $display("Loop Time = %0d", cfg.loop_time);
     repeat(cfg.loop_time)
     begin
-        $display("Loop Time = %0d", cfg.loop_time);
         set_config_params(9600,8,3,1,1); // Baud Rate , Frame Len , Parity , Stop Bit , Randomize Flag (1 for random , 0 for directed)
 	    cfg.print();
         phase.raise_objection (.obj(this));

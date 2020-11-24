@@ -63,7 +63,8 @@ task apb_monitor::run_phase(uvm_phase phase);
 			  
 		trans_collected.PADDR 		= `MONAPB_IF.PADDR;		  
 		trans_collected.PRDATA 		= `MONAPB_IF.PRDATA;
-		trans_collected.PREADY 		= `MONAPB_IF.PREADY;	  
+		trans_collected.PREADY 		= `MONAPB_IF.PREADY;
+		`uvm_info(get_type_name(), {"APB Monitor :: Transaction Collected:\n", trans_collected.sprint()}, UVM_HIGH)	  
 		wait(!`MONAPB_IF.PREADY); 
   		item_collected_port_mon.write(trans_collected); // It sends the transaction non-blocking and it sends to all connected export 
  	end

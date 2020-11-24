@@ -17,7 +17,7 @@ class uart_config extends uvm_object;
     const bit[31:0] trans_data_addr         = 32'd4; 
     const bit[31:0] receive_data_addr       = 32'd5;
 
-    const int loop_time = 50;
+    const int loop_time = 1;
      
     `uvm_object_utils_begin(uart_config)
         `uvm_field_int(bRate, UVM_DEFAULT + UVM_DEC)

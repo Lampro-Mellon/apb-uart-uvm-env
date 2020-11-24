@@ -54,6 +54,7 @@ endclass
   	  		`DRIVAPB_IF.PADDR		<= 0;  
   	    	seq_item_port.get_next_item(req);
   	    	drive(req);
+ 			`uvm_info("APB_DRIVER_TR", $sformatf("APB Finished Driving Transfer \n%s",req.sprint()), UVM_HIGH)
   	    	seq_item_port.item_done();
   	  	end
   	endtask : run_phase
