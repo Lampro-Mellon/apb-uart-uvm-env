@@ -125,7 +125,6 @@ task apbuart_scoreboard::run_phase(uvm_phase phase);
 		end
 		else if (apb_pkt_drv.PADDR == cfg.receive_data_addr)
 		begin
-			$display("Waiting for Valid Payload");
 			wait(pkt_qu_drvuart.size() > 0);	    	// checking the fifo that it contains any valid entry from driver
     		uart_pkt_drv = pkt_qu_drvuart.pop_front(); 	// getting the entry from the start of fifo
 			wait(pkt_qu_monapb.size() > 0);	    		// checking the fifo that it contains any valid entry from monitor apb

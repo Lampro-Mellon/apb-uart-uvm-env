@@ -74,6 +74,7 @@ task uart_driver::get_and_drive();
 	uart_transaction req;
 	forever 
 	begin
+    `DRIVUART_IF.RX <=1'b1;
 	  @(posedge vifuart.PCLK iff (vifuart.PRESETn))
 	  seq_item_port.get_next_item(req);
     trans_collected.payload = req.payload;

@@ -18,7 +18,7 @@ function void apbuart_frame_error_test::build_phase (uvm_phase phase);
 endfunction
 
 task apbuart_frame_error_test::run_phase(uvm_phase phase);
-    repeat(50)
+    repeat(cfg.loop_time)
     begin
         set_config_params(9600,8,3,1,1); // Baud Rate , Frame Len , Parity , Stop Bit , Randomize Flag (1 for random , 0 for directed)
         cfg.print();
@@ -26,5 +26,5 @@ task apbuart_frame_error_test::run_phase(uvm_phase phase);
         apbuart_sq.start(env_sq.v_sqr);
         phase.drop_objection(.obj(this));
     end
-  	phase.phase_done.set_drain_time(this, 20); 
+  	phase.phase_done.set_drain_time(this, 75000); 
 endtask

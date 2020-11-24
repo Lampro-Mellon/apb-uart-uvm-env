@@ -4,7 +4,7 @@ TEST_NAMES =`cat $(FILE)`
 
 compile:
 			@echo "Compiling Design"
-			vcs -sverilog -ntb_opts uvm-1.2 -f flist -full64 -LDFLAGS '-Wl,--no-as-needed'
+			vcs -sverilog -ntb_opts uvm-1.2 -f flist -cm line+tgl+cond+branch+assert+fsm -full64 -LDFLAGS '-Wl,--no-as-needed'
 
 run:
 			@echo "Running Tests"
@@ -17,6 +17,16 @@ test-list:
 				echo $$i; \
 			done
 
+run_cov_all:		
+			@echo "Running Tests with Coverage"
+			mkdir ${TEST_NAMES}
+			@for i in $(TEST_NAMES); do \
+				./simv -l $$i.log +UVM_TIMEOUT=900000000 +UVM_TESTNAME=$$i -cm line+tgl+cond+branch+assert+fsm; \
+				cp -rf simv.vdb $$i/; \
+				mv $$i.log $$i/; \
+			done
+			urg -dir *_test/*.vdb 	
+
 run-test:
 			@echo "Running $(TEST) Test"
 			./simv -l ${TEST}.log +UVM_TIMEOUT=900000000 +UVM_TESTNAME=${TEST}
@@ -24,4 +34,4 @@ run-test:
 
 clean:
 			@echo "Cleaning up...."
-			rm -rf csrc DVEfiles inter.vpd dump.vcd simv simv.daidir ucli.key vc_hdrs.h vcs.log .inter.vpd.uvm *.log
+			rm -rf csrc DVEfiles urgReport simv.vdb ${TEST_NAMES} inter.vpd dump.vcd simv simv.daidir ucli.key vc_hdrs.h vcs.log .inter.vpd.uvm *.log

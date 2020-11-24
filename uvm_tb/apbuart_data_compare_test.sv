@@ -18,7 +18,7 @@ function void apbuart_data_compare_test::build_phase (uvm_phase phase);
 endfunction
 
 task apbuart_data_compare_test::run_phase(uvm_phase phase);
-  repeat(50)
+  repeat(cfg.loop_time)
   begin
     set_config_params(9600,8,3,1,1); // Baud Rate , Frame Len , Parity , Stop Bit , Randomize Flag (1 for random , 0 for directed)
 	  cfg.print();
