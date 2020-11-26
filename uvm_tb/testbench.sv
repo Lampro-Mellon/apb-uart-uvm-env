@@ -1,23 +1,15 @@
 module tbench_top;
 
-  bit PCLK=0;
+  bit PCLK;
   bit PRESETn;
 
-  always #5 PCLK = ~PCLK;
-  
-  initial begin
-    PRESETn 	  = 1;
-    #10
-    PRESETn 	  = 0;
-    #10 PRESETn = 1;
-  end
-
-  apb_if  vifapb  (PCLK,PRESETn);
-  uart_if vifuart (PCLK,PRESETn);
+  clk_rst_interface vifclk(PRESETn, PCLK);
+  apb_if            vifapb  (PCLK);
+  uart_if           vifuart (PCLK);
 
   apb_uart_top  DUT (
-                 	  .PCLK(vifapb.PCLK),
-                 	  .PRESETn(vifapb.PRESETn),
+                 	  .PCLK(PCLK),
+                 	  .PRESETn(PRESETn),
 	             	    .PSELx(vifapb.PSELx),
 	             	    .PENABLE(vifapb.PENABLE),
 	             	    .PWRITE(vifapb.PWRITE),
@@ -28,16 +20,17 @@ module tbench_top;
 	             	    .PWDATA(vifapb.PWDATA),
 	             	    .PADDR(vifapb.PADDR),
 	             	    .PRDATA(vifapb.PRDATA)
-                	  );
+                    );
+  
   initial 
   begin 
     uvm_config_db # (virtual apb_if)::set(uvm_root::get(),"*","vifapb",vifapb);
     uvm_config_db # (virtual uart_if)::set(uvm_root::get(),"*","vifuart",vifuart);
+    uvm_config_db # (virtual clk_rst_interface)::set(uvm_root::get(),"*","vifclk",vifclk);
     $dumpfile("dump.vcd"); 
     $dumpvars;
   end
-   
+
   initial
     run_test(); // built in func...you can give test name as argument
-
 endmodule

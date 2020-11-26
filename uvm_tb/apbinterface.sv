@@ -1,4 +1,4 @@
-interface apb_if (input PCLK, input PRESETn);
+interface apb_if (input PCLK);
 
   //Signals Declaration 
     logic           PSELx;
@@ -36,7 +36,7 @@ interface apb_if (input PCLK, input PRESETn);
   endclocking
   
   //modports
-  modport DRIVER  (clocking driver_cb ,input PCLK,PRESETn);
-  modport MONITOR (clocking monitor_cb,input PCLK,PRESETn);
+  modport DRIVER  (clocking driver_cb);
+  modport MONITOR (clocking monitor_cb);
 
 endinterface

@@ -3,9 +3,10 @@
 class apb_driver extends uvm_driver #(apb_transaction);
 	`uvm_component_utils(apb_driver)
 
-	virtual apb_if		vifapb;
-	apb_transaction 	trans_collected_drv; 
-  	uart_config 		cfg; // Handle to  a cfg class 
+	virtual apb_if				vifapb;
+	virtual clk_rst_interface	vifclk;
+	apb_transaction 			trans_collected_drv; 
+  	uart_config 				cfg; // Handle to  a cfg class 
 	uvm_analysis_port #(apb_transaction) item_collected_port_drv;
 
 	function new (string name, uvm_component parent);
@@ -37,6 +38,8 @@ endclass
         super.connect_phase(phase);
 	   	if(!uvm_config_db#(virtual apb_if)::get(this, "", "vifapb", vifapb))
   	    	`uvm_fatal("NO_VIF",{"virtual interface must be set for: ",get_full_name(),".vifapb"});
+		if(!uvm_config_db#(virtual clk_rst_interface)::get(this, "", "vifclk", vifclk))
+  	    	`uvm_fatal("NO_VIF",{"virtual interface must be set for: ",get_full_name(),".vifclk"});	  
     endfunction : connect_phase  
 
   	// ---------------------------------------  
@@ -46,7 +49,7 @@ endclass
   		apb_transaction req;
   	  	forever 
   	  	begin
-			@(posedge vifapb.PCLK iff (vifapb.PRESETn))
+			@(posedge vifclk.clk iff (vifclk.reset_n))
 			`DRIVAPB_IF.PSELx		<= 0;
 			`DRIVAPB_IF.PENABLE		<= 0;  
 			`DRIVAPB_IF.PWRITE		<= 0;
@@ -66,7 +69,7 @@ endclass
 	
   	task apb_driver::drive(apb_transaction req);
 		`DRIVAPB_IF.PSELx			<= 1;
-		@(posedge vifapb.DRIVER.PCLK);
+		@(posedge vifclk.clk);
 		`DRIVAPB_IF.PENABLE			<= 1;
   	  	`DRIVAPB_IF.PWRITE			<= req.PWRITE;
 		if(req.PADDR == cfg.baud_config_addr)

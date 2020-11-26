@@ -7,7 +7,9 @@ class apb_monitor extends uvm_monitor;
   	// ---------------------------------------
   	//  Virtual Interface
   	// ---------------------------------------
-  	virtual apb_if vifapb;
+  	virtual apb_if 				vifapb;
+	virtual clk_rst_interface 	vifclk;
+
   
   	// ---------------------------------------
   	// analysis port, to `uvm_analysis_imp_decl( _mon ) send the transaction
@@ -41,6 +43,8 @@ function void apb_monitor::build_phase(uvm_phase phase);
 	super.build_phase(phase); 
   	if(!uvm_config_db#(virtual apb_if)::get(this, "", "vifapb", vifapb))
     	`uvm_fatal("NOVIF",{"virtual interface must be set for: ",get_full_name(),".vifapb"})
+	if(!uvm_config_db#(virtual clk_rst_interface)::get(this, "", "vifclk", vifclk))
+    	`uvm_fatal("NOVIF",{"virtual interface must be set for: ",get_full_name(),".vifclk"})	
 endfunction: build_phase
 	
 // ------------------------------------------------------------------------------------
