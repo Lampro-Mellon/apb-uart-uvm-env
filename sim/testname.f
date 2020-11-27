@@ -4,3 +4,4 @@ apbuart_parity_error_test
 apbuart_frame_error_test
 apbuart_free_error_test
 apbuart_rec_reg_test
+apbuart_rec_reg_clk_test

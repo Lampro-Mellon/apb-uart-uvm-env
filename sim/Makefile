@@ -1,10 +1,11 @@
 TEST=apbuart_config_test
+SCALE=1ns
 FILE = testname.f
 TEST_NAMES =`cat $(FILE)`
 
 compile:
 			@echo "Compiling Design"
-			vcs -sverilog -ntb_opts uvm-1.2 -f flist -timescale=1ns/1ps -cm line+tgl+cond+branch+assert+fsm -full64 -LDFLAGS '-Wl,--no-as-needed'
+			vcs -sverilog -ntb_opts uvm-1.2 -f flist -timescale=${SCALE}/1ps -cm line+tgl+cond+branch+assert+fsm -full64 -LDFLAGS '-Wl,--no-as-needed'
 
 run:
 			@echo "Running Tests"

@@ -52,14 +52,21 @@ endclass : clk_rst_seq_base
 class clk_rst_default_seq extends clk_rst_seq_base;
 
   // Add local random fields and constraints here
-  rand bit  [9:0]  t_clk_period ;
-  rand bit  [3:0]  t_reset;
+  rand bit  [7:0]  t_clk_period ;
+  rand bit  [2:0]  t_reset;
 
   
   `uvm_object_utils_begin(clk_rst_default_seq)
-    `uvm_field_int(t_clk_period, UVM_ALL_ON)
-    `uvm_field_int(t_reset, UVM_ALL_ON)
+    `uvm_field_int (t_clk_period, UVM_ALL_ON)
+    `uvm_field_int (t_reset, UVM_ALL_ON)
   `uvm_object_utils_end
+
+  // Default constraint
+  constraint c_t_period 
+  {
+    t_clk_period inside {10,50,100}; // constraint on 10 , 50 and 100 MHz Clock
+  }
+
 
   function new(string name="clk_rst_example_sequence");
     super.new(name);
@@ -78,11 +85,9 @@ class clk_rst_default_seq extends clk_rst_seq_base;
 
   // Hook to initialize sequence item
   virtual function void init_item(clk_rst_seq_item item);
-
     item.t_high  = this.t_clk_period / 2;
     item.t_low   = this.t_clk_period / 2;
     item.t_reset = this.t_reset;
-    $display("Sequence Item = %0d",item.t_high);
   endfunction : init_item
 
 endclass : clk_rst_default_seq
@@ -92,10 +97,10 @@ endclass : clk_rst_default_seq
 class clk_rst_update_clock_freq_seq extends clk_rst_seq_base;
 
   // Add local random fields and constraints here
-  real freq_mhz;
+  rand bit [1:0] freq_mhz;
 
   `uvm_object_utils_begin(clk_rst_update_clock_freq_seq)
-    `uvm_field_real(freq_mhz, UVM_ALL_ON)
+    `uvm_field_real(freq_mhz, UVM_ALL_ON | UVM_NOPRINT)
   `uvm_object_utils_end
 
   function new(string name="clk_rst_update_clock_freq_seq");
@@ -104,14 +109,14 @@ class clk_rst_update_clock_freq_seq extends clk_rst_seq_base;
 
   // Hook to initialize this sequence
   virtual function void init(real freq);
-    //this.freq_mhz.rand_mode(0);
+    this.freq_mhz.rand_mode(0);
     this.freq_mhz = freq;
   endfunction : init
 
   // Hook to initialize sequence item
   virtual function void init_item(clk_rst_seq_item item);
-    //realtime period = clk_rst_pkg::freq2period($sformatf("%f MHz",freq_mhz), 1.0);
-    realtime period = 10;
+    realtime period = clk_rst_pkg::freq2period($sformatf("%f MHz",freq_mhz), 1.0);
+    $display(period);
     item.t_high  = period / 2;
     item.t_low   = period / 2;
   endfunction : init_item
@@ -124,15 +129,17 @@ endclass : clk_rst_update_clock_freq_seq
 class clk_rst_reset_seq extends clk_rst_seq_base;
 
   // Add local random fields and constraints here
-  realtime t_reset = 10ns; //Default value if user does not call .init() or .randomize()
+  rand bit [3:0] t_reset = 1; //Default value if user does not call .init() or .randomize()
 
   // Default constraint
- /* constraint c_t_reset {
-    soft this.t_reset >= 10ns;
-    soft this.t_reset <= 30ns;
-  }*/
+  constraint c_t_reset 
+  {
+    soft this.t_reset >= 1;
+    soft this.t_reset <= 10;
+  }
+
   `uvm_object_utils_begin(clk_rst_reset_seq)
-    `uvm_field_real(t_reset, UVM_ALL_ON)
+    `uvm_field_real(t_reset, UVM_ALL_ON | UVM_NOPRINT)
   `uvm_object_utils_end
 
   function new(string name="clk_rst_reset_seq");
@@ -141,7 +148,7 @@ class clk_rst_reset_seq extends clk_rst_seq_base;
 
   // Hook to initialize this sequence
   virtual function void init(realtime rst);
-   // this.t_reset.rand_mode(0);
+    this.t_reset.rand_mode(0);
     this.t_reset = rst;
   endfunction : init
 

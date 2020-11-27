@@ -13,12 +13,13 @@
 ./../uvm_tb/clk_config.sv
 ./../uvm_tb/clk_sequencer.sv
 ./../uvm_tb/clk_transaction.sv
+./../uvm_tb/clk_rst_pkg.sv
 ./../uvm_tb/clk_sequence.sv
 ./../uvm_tb/clkinterface.sv
 ./../uvm_tb/clk_driver.sv
 ./../uvm_tb/clk_monitor.sv
 ./../uvm_tb/clk_agent.sv
-./../uvm_tb/apb_sequence.sv 
+./../uvm_tb/apb_sequence.sv
 ./../uvm_tb/uart_sequence.sv 
 ./../uvm_tb/apb_sequencer.sv 
 ./../uvm_tb/uart_sequencer.sv
@@ -40,3 +41,4 @@
 ./../uvm_tb/apbuart_frame_error_test.sv 
 ./../uvm_tb/apbuart_free_error_test.sv 
 ./../uvm_tb/apbuart_rec_reg_test.sv
+./../uvm_tb/apbuart_rec_reg_clk_test.sv

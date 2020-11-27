@@ -130,13 +130,10 @@ task rec_reg_test::body();
 	apbuart_sq 	= apb_transaction::type_id::create("apbuart_sq");
 	cfg 		= uart_config::type_id::create("cfg");
 
-    /*`uvm_do_with(apbuart_sq,{
+    `uvm_do_with(apbuart_sq,{
 	  						 apbuart_sq.PWRITE == 1'b0;
                           	 apbuart_sq.PADDR  == cfg.receive_data_addr;
                           	}) 
-	*/
-	`uvm_do(apbuart_sq) 
-
 endtask: body
 
 task fe_test_apbuart::body();

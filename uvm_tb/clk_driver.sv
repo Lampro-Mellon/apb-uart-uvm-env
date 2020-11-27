@@ -100,11 +100,11 @@ class clk_rst_driver extends uvm_driver#(clk_rst_seq_item);
       seq_item_port.get_next_item(item); // Waits until the next item becomes available
       // We never want a clock half-period that is 0!
       if (item.t_high > 0) this.t_high  = item.t_high;
-      $display ("Hello I am clock from Drive Port = %0d",this.t_high);
+      //$display ("Hello I am clock from Drive Port = %0d",this.t_high);
       if (item.t_low  > 0) this.t_low   = item.t_low;
       #(clk_cfg.initial_reset_cycles*clk_cfg.clock_period);
       this.t_reset = item.t_reset;  
-      $display ("Hello I am Reset from Drive Port = %0d ",item.t_reset);
+      //$display ("Hello I am Reset from Drive Port = %0d ",item.t_reset);
       seq_item_port.item_done();
     end
   endtask : drive_items

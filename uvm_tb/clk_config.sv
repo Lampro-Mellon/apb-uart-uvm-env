@@ -1,7 +1,7 @@
 class clk_rst_cfg extends uvm_object;
 
-  realtime clock_period = 2.0ns;
-  real initial_reset_cycles = 1;
+  real clock_period = 20; // 20 ns for 50 Mhz
+  real initial_reset_cycles = 1; // Apply reset for 20ns
 
   uvm_active_passive_enum is_active = UVM_ACTIVE;
 
