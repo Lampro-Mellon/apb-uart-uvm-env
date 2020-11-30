@@ -22,6 +22,8 @@ task apbuart_parity_error_test::run_phase(uvm_phase phase);
     begin
         set_config_params(9600,8,3,1,1); // Baud Rate , Frame Len , Parity , Stop Bit , Randomize Flag (1 for random , 0 for directed)
         cfg.print();
+        set_apbconfig_params(2,1);		 // Slave Bus Address , Randomize Flag (1 for random , 0 for directed)
+		apb_cfg.print();
         phase.raise_objection (.obj(this));
         apbuart_sq.start(env_sq.v_sqr);
         phase.drop_objection(.obj(this));

@@ -11,6 +11,7 @@
 ./../uvm_tb/uart_transaction.sv 
 ./../uvm_tb/uart_config.sv
 ./../uvm_tb/clk_config.sv
+./../uvm_tb/apb_config.sv
 ./../uvm_tb/clk_sequencer.sv
 ./../uvm_tb/clk_transaction.sv
 ./../uvm_tb/clk_rst_pkg.sv

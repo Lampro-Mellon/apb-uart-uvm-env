@@ -6,7 +6,8 @@ class apb_driver extends uvm_driver #(apb_transaction);
 	virtual apb_if				vifapb;
 	virtual clk_rst_interface	vifclk;
 	apb_transaction 			trans_collected_drv; 
-  	uart_config 				cfg; // Handle to  a cfg class 
+  	uart_config 				cfg; // Handle to  a cfg class
+	apb_config 					apb_cfg; 
 	uvm_analysis_port #(apb_transaction) item_collected_port_drv;
 
 	function new (string name, uvm_component parent);
@@ -29,6 +30,8 @@ endclass
       	item_collected_port_drv = new("item_collected_port_drv", this);
 		if(!uvm_config_db#(uart_config)::get(this, "", "cfg", cfg))
 			`uvm_fatal("No cfg",{"Configuration must be set for: ",get_full_name(),".cfg"});
+		if(!uvm_config_db#(apb_config)::get(this, "", "apb_cfg", apb_cfg))
+			`uvm_fatal("No apb_cfg",{"Configuration must be set for: ",get_full_name(),".cfg"});
   	endfunction: build_phase
 
 	// --------------------------------------- 
@@ -68,7 +71,7 @@ endclass
   	//--------------------------------------------------------
 	
   	task apb_driver::drive(apb_transaction req);
-		`DRIVAPB_IF.PSELx			<= 1;
+		`DRIVAPB_IF.PSELx			<= apb_cfg.psel_Index;
 		@(posedge vifclk.clk);
 		`DRIVAPB_IF.PENABLE			<= 1;
   	  	`DRIVAPB_IF.PWRITE			<= req.PWRITE;

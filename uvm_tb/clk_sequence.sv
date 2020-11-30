@@ -55,7 +55,6 @@ class clk_rst_default_seq extends clk_rst_seq_base;
   rand bit  [7:0]  t_clk_period ;
   rand bit  [2:0]  t_reset;
 
-  
   `uvm_object_utils_begin(clk_rst_default_seq)
     `uvm_field_int (t_clk_period, UVM_ALL_ON)
     `uvm_field_int (t_reset, UVM_ALL_ON)
@@ -66,7 +65,6 @@ class clk_rst_default_seq extends clk_rst_seq_base;
   {
     t_clk_period inside {10,20,100}; // constraint on 10 , 50 and 100 MHz Clock
   }
-
 
   function new(string name="clk_rst_example_sequence");
     super.new(name);
