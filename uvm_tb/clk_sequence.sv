@@ -64,7 +64,7 @@ class clk_rst_default_seq extends clk_rst_seq_base;
   // Default constraint
   constraint c_t_period 
   {
-    t_clk_period inside {10,50,100}; // constraint on 10 , 50 and 100 MHz Clock
+    t_clk_period inside {10,20,100}; // constraint on 10 , 50 and 100 MHz Clock
   }
 
 

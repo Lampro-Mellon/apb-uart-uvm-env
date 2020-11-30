@@ -54,11 +54,9 @@ class clk_rst_driver extends uvm_driver#(clk_rst_seq_item);
     forever begin
       vifclk.driver.clk_drv <= 1'b1;
       #(this.t_high);
-      //$display ("Clock Positive= %0d", vifclk.driver.clk_drv);
       // TBD: Should changing the clock period on a falling edge be allowed?
       vifclk.driver.clk_drv <= 1'b0;
       #(this.t_low);
-      //$display ("Clock Negative = %0d", vifclk.driver.clk_drv);
     end
   endtask : run_clock
 
@@ -66,14 +64,11 @@ class clk_rst_driver extends uvm_driver#(clk_rst_seq_item);
   task run_reset();
     forever begin
       // TBD: Should asynchronous reset be allowed?
-      //$display("Hello I am Reset before = %0d ",t_reset);
       wait (this.t_reset > 0)
-      //$display("Hello I am Reset from Config = %0d",t_reset);
       vifclk.driver.reset_n_drv <= 1'b0;
       #(this.t_reset);
       vifclk.driver.reset_n_drv <= 1'b1;
       this.t_reset = 0;
-      //this.treset = 0;
     end
   endtask : run_reset
 
@@ -104,7 +99,6 @@ class clk_rst_driver extends uvm_driver#(clk_rst_seq_item);
       if (item.t_low  > 0) this.t_low   = item.t_low;
       #(clk_cfg.initial_reset_cycles*clk_cfg.clock_period);
       this.t_reset = item.t_reset;  
-      //$display ("Hello I am Reset from Drive Port = %0d ",item.t_reset);
       seq_item_port.item_done();
     end
   endtask : drive_items
