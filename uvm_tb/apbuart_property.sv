@@ -11,9 +11,12 @@ module apbuart_property(
     input   logic [32-1:0]  PRDATA
 	);
 
-  sequence APB_WRITE_CYCLE;
-    PWRITE throughout (PSELx && PENABLE) ;
-  endsequence
+ sequence APB_WRITE_CYCLE;
+	(PWRITE throughout (PSELx && PENABLE)) ;
+ endsequence
+ sequence APB_READ_CYCLE;
+	(!PWRITE throughout (PSELx && PENABLE)) ;
+ endsequence
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%//
 //------------------- :: Check#1: SETUP_state ::-------------------------
@@ -26,7 +29,7 @@ module apbuart_property(
 				$rose(PSELx) |->  !(PENABLE); 
 		endproperty
 		assert property(SETUP_state)
-            $display("-------------------Check#1: SETUP_state PASS------------------");
+        //    $display("-------------------Check#1: SETUP_state PASS------------------");
 		else
             `uvm_error("ASSERTION_FAILED",$sformatf("------ :: Check#1: SETUP_state FAILED :: ------"))
 //	`endif
@@ -42,7 +45,7 @@ module apbuart_property(
 				$rose(PSELx) |->  ##1($rose(PENABLE));
 		endproperty
 		assert property(ACCESS_state)
-            $display("-------------------Check#2: ACCESS_state PASS------------------");
+        //    $display("-------------------Check#2: ACCESS_state PASS------------------");
 		else
             `uvm_error("ASSERTION_FAILED",$sformatf("------ :: Check#2: ACCESS_state FAILED :: ------"))
 //	`endif
@@ -57,7 +60,7 @@ module apbuart_property(
 				(PSELx && !PENABLE) |-> !($isunknown(PWRITE)) && !($isunknown(PADDR));
 		endproperty
 		assert property(valid_PWRITE_PADDR_in_SETUP)
-            $display("-------------------Check#3: valid_PWRITE_PADDR_in_SETUP PASS------------------");
+        //    $display("-------------------Check#3: valid_PWRITE_PADDR_in_SETUP PASS------------------");
 		else
             `uvm_error("ASSERTION_FAILED",$sformatf("------ :: Check#3: valid_PWRITE_PADDR_in_SETUP FAILED :: ------"))
 //	`endif
@@ -72,7 +75,7 @@ module apbuart_property(
 				(PSELx && !PENABLE && PWRITE) |-> !($isunknown(PWDATA));
 		endproperty
 		assert property(valid_PWDATA_in_write_operation)
-            $display("-------------------Check#4: valid_PWDATA_in_write_operation PASS------------------");
+        //    $display("-------------------Check#4: valid_PWDATA_in_write_operation PASS------------------");
 		else
             `uvm_error("ASSERTION_FAILED",$sformatf("------ :: Check#4: valid_PWDATA_in_write_operation FAILED :: ------"))
 //	`endif
@@ -87,7 +90,7 @@ module apbuart_property(
 				(PSELx && PENABLE) |-> $stable({PWRITE, PADDR});
 		endproperty
 		assert property(stable_PWRITE_PADDR_in_ACCESS)
-            $display("-------------------Check#5: stable_PWRITE_PADDR_in_ACCESS PASS------------------");
+        //    $display("-------------------Check#5: stable_PWRITE_PADDR_in_ACCESS PASS------------------");
 		else
             `uvm_error("ASSERTION_FAILED",$sformatf("------ :: Check#5: stable_PWRITE_PADDR_in_ACCESS FAILED :: ------"))
 //	`endif
@@ -102,7 +105,7 @@ module apbuart_property(
 				(PSELx && PENABLE && PWRITE) |-> $stable(PWDATA);
 		endproperty
 		assert property(stable_PWDATA_during_write_operation)
-            $display("-------------------Check#6: stable_PWDATA_during_write_operation PASS------------------");
+        //    $display("-------------------Check#6: stable_PWDATA_during_write_operation PASS------------------");
 		else
             `uvm_error("ASSERTION_FAILED",$sformatf("------ :: Check#6: stable_PWDATA_during_write_operation FAILED :: ------"))
 //	`endif
@@ -114,11 +117,29 @@ module apbuart_property(
 //	`ifdef valid_PRDATA_in_read_operation
 		property valid_PRDATA_in_read_operation;
 			@(posedge PCLK) disable iff (!PRESETn)
-				(PREADY && ~PWRITE) |-> !($isunknown(PRDATA));
+				(PREADY and APB_READ_CYCLE) |-> !($isunknown(PRDATA));
 		endproperty
 		assert property(valid_PRDATA_in_read_operation)
-            $display("-------------------Check#7: valid_PRDATA_in_read_operation PASS------------------");
+        //    $display("-------------------Check#7: valid_PRDATA_in_read_operation PASS------------------");
 		else
             `uvm_error("ASSERTION_FAILED",$sformatf("------ :: Check#7: valid_PRDATA_in_read_operation FAILED :: ------"))
 //	`endif
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%//
+//------------------- :: Check#8: PSELx_and_PENABLE_multiple_operation ::----------------
+//   For multiple read/write operation PSELx not necessarily be deasserted, but it
+//	 remains HIGH untill all the transactions been done. So we have to check that
+// 	 forevery time PENABLE goes  HIGH, PSELx should be asserted before one cycle
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%//
+//	`ifdef PSELx_and_PENABLE_multiple_operation
+		property PSELx_and_PENABLE_multiple_operation;
+			@(posedge PCLK) disable iff (!PRESETn)
+				PENABLE |-> $past(PSELx);
+		endproperty
+		assert property(PSELx_and_PENABLE_multiple_operation)
+        //    $display("-------------------Check#8: PSELx_and_PENABLE_multiple_operation PASS------------------");
+		else
+            `uvm_error("ASSERTION_FAILED",$sformatf("------ :: Check#8: PSELx_and_PENABLE_multiple_operation FAILED :: ------"))
+//	`endif
+
 endmodule
