@@ -72,8 +72,6 @@ endclass
 	
   	task apb_driver::drive(apb_transaction req);
 		`DRIVAPB_IF.PSELx			<= apb_cfg.psel_Index;
-		@(posedge vifclk.clk);
-		`DRIVAPB_IF.PENABLE			<= 1;
   	  	`DRIVAPB_IF.PWRITE			<= req.PWRITE;
 		if(req.PADDR == cfg.baud_config_addr)
 			`DRIVAPB_IF.PWDATA			<= cfg.bRate;
@@ -86,6 +84,8 @@ endclass
 		else
 			`DRIVAPB_IF.PWDATA			<= req.PWDATA;
   	  	`DRIVAPB_IF.PADDR			<= req.PADDR;
+		@(posedge vifclk.clk);
+		`DRIVAPB_IF.PENABLE			<= 1;
 		trans_collected_drv.PWRITE 	 = req.PWRITE;	
 		trans_collected_drv.PADDR 	 = req.PADDR;
 		trans_collected_drv.PWDATA 	 = req.PWDATA;
