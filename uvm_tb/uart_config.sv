@@ -18,13 +18,15 @@ class uart_config extends uvm_object;
     const bit[31:0] receive_data_addr       = 32'd5;
 
     const int loop_time = 50;
-     
+    uvm_active_passive_enum is_active = UVM_ACTIVE;
+
     `uvm_object_utils_begin(uart_config)
         `uvm_field_int(bRate, UVM_DEFAULT + UVM_DEC)
         `uvm_field_int(frame_len, UVM_DEFAULT)
         `uvm_field_int(parity, UVM_DEFAULT )  
         `uvm_field_int(n_sb, UVM_DEFAULT)
         `uvm_field_int(baud_rate, UVM_DEFAULT + UVM_DEC)
+        `uvm_field_enum(uvm_active_passive_enum, is_active, UVM_ALL_ON)
     `uvm_object_utils_end
 
     constraint c_frame_len  {frame_len  inside {5,6,7,8};}

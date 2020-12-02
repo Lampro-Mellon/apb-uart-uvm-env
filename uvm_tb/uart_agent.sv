@@ -6,7 +6,8 @@ class uart_agent extends uvm_agent;
   	// ------------------------------------------------------------
   	uart_driver    driver;
   	uart_sequencer sequencer;
-  	uart_monitor   monitor;
+	uart_monitor   monitor;
+	uart_config    cfg;  
   	// ---------------------------------------
   	//  Calling the constructor
   	// ---------------------------------------
@@ -23,10 +24,12 @@ endclass
 //  build_phase to create the instance of monitor , driver and sequencer
 // ---------------------------------------------------------------------
 function void uart_agent::build_phase(uvm_phase phase);
-  	super.build_phase(phase);
+	super.build_phase(phase);
+	if(!uvm_config_db#(uart_config)::get(this, "", "cfg", cfg))
+		`uvm_fatal("NO_CFG",{"Configuration must be set for: ",get_full_name(),".cfg"});
   	monitor = uart_monitor::type_id::create("monitor", this);
   	//creating driver and sequencer only for ACTIVE agent
-  	if(get_is_active() == UVM_ACTIVE) 
+  	if(cfg.is_active == UVM_ACTIVE) 
   		begin
   	  		driver    = uart_driver::type_id::create("driver", this);
   	  		sequencer = uart_sequencer::type_id::create("sequencer", this);
@@ -37,6 +40,6 @@ endfunction : build_phase
 //  connect_phase - connecting the driver and sequencer port
 // ------------------------------------------------------------------
 function void uart_agent::connect_phase(uvm_phase phase);
-	if(get_is_active() == UVM_ACTIVE) 
+	if(cfg.is_active == UVM_ACTIVE) 
     	driver.seq_item_port.connect(sequencer.seq_item_export);
 endfunction : connect_phase

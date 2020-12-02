@@ -33,7 +33,7 @@ endclass : uart_driver
 function void uart_driver::build_phase(uvm_phase phase);
   	super.build_phase(phase);
     if(!uvm_config_db#(uart_config)::get(this, "", "cfg", cfg))
-    	`uvm_fatal("NO_CFG",{"Configuration must be set for: ",get_full_name(),".vifuart"});
+    	`uvm_fatal("NO_CFG",{"Configuration must be set for: ",get_full_name(),".cfg"});
     trans_collected = new();
     item_collected_port_drv = new("item_collected_port_drv", this);  
 endfunction: build_phase
