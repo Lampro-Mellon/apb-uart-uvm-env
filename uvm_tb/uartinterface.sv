@@ -1,4 +1,4 @@
-interface uart_if (input PCLK);
+interface uart_if (input PCLK , input PRESETn);
 
   //Signals Declaration 
     logic           Tx;
@@ -16,7 +16,7 @@ interface uart_if (input PCLK);
   endclocking
   
   //modports
-  modport DRIVER  (clocking driver_cb);
-  modport MONITOR (clocking monitor_cb);
+  modport DRIVER  (clocking driver_cb , input PCLK,PRESETn);
+  modport MONITOR (clocking monitor_cb , input PCLK,PRESETn);
 
 endinterface

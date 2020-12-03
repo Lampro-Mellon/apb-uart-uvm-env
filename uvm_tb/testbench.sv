@@ -4,35 +4,35 @@ module tbench_top;
   bit PRESETn;
 
   clk_rst_interface vifclk(PRESETn, PCLK);
-  apb_if            vifapb  (PCLK);
-  uart_if           vifuart (PCLK);
+  apb_if            vifapb  (PCLK,PRESETn);
+  uart_if           vifuart (PCLK,PRESETn);
 
   apb_uart_top  DUT (
                  	  .PCLK(PCLK),
                  	  .PRESETn(PRESETn),
-	             	    .PSELx(vifapb.PSELx),
-	             	    .PENABLE(vifapb.PENABLE),
-	             	    .PWRITE(vifapb.PWRITE),
-	             	    .Tx(vifuart.Tx),
-	             	    .RX(vifuart.RX),
-	             	    .PREADY(vifapb.PREADY),
-	             	    .PSLVERR(vifapb.PSLVERR),
-	             	    .PWDATA(vifapb.PWDATA),
-	             	    .PADDR(vifapb.PADDR),
-	             	    .PRDATA(vifapb.PRDATA)
+	             	  .PSELx(vifapb.PSELx),
+	             	  .PENABLE(vifapb.PENABLE),
+	             	  .PWRITE(vifapb.PWRITE),
+	             	  .Tx(vifuart.Tx),
+	             	  .RX(vifuart.RX),
+	             	  .PREADY(vifapb.PREADY),
+	             	  .PSLVERR(vifapb.PSLVERR),
+	             	  .PWDATA(vifapb.PWDATA),
+	             	  .PADDR(vifapb.PADDR),
+	             	  .PRDATA(vifapb.PRDATA)
                     );
 	
   apbuart_property assertions (
                               	.PCLK(PCLK),
-                 	        .PRESETn(PRESETn),
-	             	              .PSELx(vifapb.PSELx),
-	             	              .PENABLE(vifapb.PENABLE),
-	             	              .PWRITE(vifapb.PWRITE),
-	             	              .PREADY(vifapb.PREADY),
-	             	              .PSLVERR(vifapb.PSLVERR),
-	             	              .PWDATA(vifapb.PWDATA),
-	             	              .PADDR(vifapb.PADDR),
-	             	              .PRDATA(vifapb.PRDATA)            
+                 	        	.PRESETn(PRESETn),
+	             	            .PSELx(vifapb.PSELx),
+	             	            .PENABLE(vifapb.PENABLE),
+	             	            .PWRITE(vifapb.PWRITE),
+	             	            .PREADY(vifapb.PREADY),
+	             	            .PSLVERR(vifapb.PSLVERR),
+	             	            .PWDATA(vifapb.PWDATA),
+	             	            .PADDR(vifapb.PADDR),
+	             	            .PRDATA(vifapb.PRDATA)            
                               );
   
   initial 

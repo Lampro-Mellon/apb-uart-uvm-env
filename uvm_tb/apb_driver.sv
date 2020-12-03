@@ -4,11 +4,8 @@ class apb_driver extends uvm_driver #(apb_transaction);
 	`uvm_component_utils(apb_driver)
 
 	virtual apb_if				vifapb;
-	virtual clk_rst_interface	vifclk;
-	apb_transaction 			trans_collected_drv; 
   	uart_config 				cfg; // Handle to  a cfg class
 	apb_config 					apb_cfg; 
-	uvm_analysis_port #(apb_transaction) item_collected_port_drv;
 
 	function new (string name, uvm_component parent);
 		super.new(name, parent);
@@ -26,8 +23,6 @@ endclass
   	// ---------------------------------------
   	function void apb_driver::build_phase(uvm_phase phase);
   		super.build_phase(phase);  
-      	trans_collected_drv = new();
-      	item_collected_port_drv = new("item_collected_port_drv", this);
 		if(!uvm_config_db#(uart_config)::get(this, "", "cfg", cfg))
 			`uvm_fatal("No cfg",{"Configuration must be set for: ",get_full_name(),".cfg"});
 		if(!uvm_config_db#(apb_config)::get(this, "", "apb_cfg", apb_cfg))
@@ -40,9 +35,7 @@ endclass
 	function void apb_driver::connect_phase(uvm_phase phase);
         super.connect_phase(phase);
 	   	if(!uvm_config_db#(virtual apb_if)::get(this, "", "vifapb", vifapb))
-  	    	`uvm_fatal("NO_VIF",{"virtual interface must be set for: ",get_full_name(),".vifapb"});
-		if(!uvm_config_db#(virtual clk_rst_interface)::get(this, "", "vifclk", vifclk))
-  	    	`uvm_fatal("NO_VIF",{"virtual interface must be set for: ",get_full_name(),".vifclk"});	  
+  	    	`uvm_fatal("NO_VIF",{"virtual interface must be set for: ",get_full_name(),".vifapb"}); 
     endfunction : connect_phase  
 
   	// ---------------------------------------  
@@ -52,7 +45,7 @@ endclass
   		apb_transaction req;
   	  	forever 
   	  	begin
-			@(posedge vifclk.clk iff (vifclk.reset_n))
+			@(posedge vifapb.PCLK iff (vifapb.PRESETn))
 			`DRIVAPB_IF.PSELx		<= 0;
 			`DRIVAPB_IF.PENABLE		<= 0;  
 			`DRIVAPB_IF.PWRITE		<= 0;
@@ -84,14 +77,10 @@ endclass
 		else
 			`DRIVAPB_IF.PWDATA			<= req.PWDATA;
   	  	`DRIVAPB_IF.PADDR			<= req.PADDR;
-		@(posedge vifclk.clk);
+		@(posedge vifapb.PCLK);
 		`DRIVAPB_IF.PENABLE			<= 1;
-		trans_collected_drv.PWRITE 	 = req.PWRITE;	
-		trans_collected_drv.PADDR 	 = req.PADDR;
-		trans_collected_drv.PWDATA 	 = req.PWDATA;
 		wait(`DRIVAPB_IF.PREADY);		
 		`DRIVAPB_IF.PSELx			<= 0;
 		`DRIVAPB_IF.PENABLE			<= 0;
 		wait(!`DRIVAPB_IF.PREADY);
-		item_collected_port_drv.write(trans_collected_drv); // It sends the transaction non-blocking and it
   	endtask

@@ -4,7 +4,6 @@ class uart_driver extends uvm_driver #(uart_transaction);
 	`uvm_component_utils(uart_driver)
   
   virtual uart_if	            vifuart;
-  virtual clk_rst_interface 	vifclk;
   uart_config cfg;
   
 
@@ -45,8 +44,6 @@ function void uart_driver::connect_phase(uvm_phase phase);
   	super.build_phase(phase);
     if(!uvm_config_db#(virtual uart_if)::get(this, "", "vifuart", vifuart))
     	`uvm_fatal("NO_VIF",{"virtual interface must be set for: ",get_full_name(),".vifuart"});
-    if(!uvm_config_db#(virtual clk_rst_interface)::get(this, "", "vifclk", vifclk))
-    	`uvm_fatal("NOVIF",{"virtual interface must be set for: ",get_full_name(),".vifclk"})  
 endfunction: connect_phase
 
 // ---------------------------------------  
@@ -77,7 +74,7 @@ task uart_driver::get_and_drive();
 	uart_transaction req;
 	forever 
 	begin
-	  @(posedge vifclk.clk iff (vifclk.reset_n))
+	  @(posedge vifuart.PCLK iff (vifuart.PRESETn))
 	  seq_item_port.get_next_item(req);
     trans_collected.payload = req.payload;
     trans_collected.bad_parity = req.bad_parity;
@@ -106,7 +103,7 @@ task uart_driver::drive_rx(uart_transaction req);
   begin
       while (no_bits_sent < ((1 + cfg.frame_len + cfg.parity[1] + (cfg.n_sb+1)) )) 
       begin
-        repeat(cfg.baud_rate)@(posedge vifclk.clk);                                  //waiting for baud rate pulse
+        repeat(cfg.baud_rate)@(posedge vifuart.PCLK);                                  //waiting for baud rate pulse
         if (no_bits_sent == 0) 
         begin
           `DRIVUART_IF.RX <= req.start_bit;
@@ -119,13 +116,11 @@ task uart_driver::drive_rx(uart_transaction req);
         end 
         else if ((no_bits_sent == (1+cfg.frame_len)) && cfg.parity[1]) 
         begin
-        //  temp = req.calc_parity(req.payload,cfg.frame_len, req.bad_parity, cfg.parity[0]);           //bad_parity is in sequence
           `DRIVUART_IF.RX <= temp[parity_of_frame];
-        //  $display("parity of frame %b",temp[parity_of_frame]);
           parity_of_frame++;                                                              //sending parity bit
           no_bits_sent++;
         end 
-        else //if (no_bits_sent == (1+cfg.frame_len) && cfg.parity[1]) 
+        else 
         begin
           for (int i=0; i <= cfg.n_sb; i++) 
           begin
