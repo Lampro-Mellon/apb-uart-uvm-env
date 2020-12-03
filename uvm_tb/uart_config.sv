@@ -11,11 +11,11 @@ class uart_config extends uvm_object;
 
     // constants address field
     const bit[31:0] baud_config_addr        = 32'd0;
-    const bit[31:0] frame_config_addr       = 32'd1;
-    const bit[31:0] parity_config_addr      = 32'd2;
-    const bit[31:0] stop_bits_config_addr   = 32'd3;
-    const bit[31:0] trans_data_addr         = 32'd4; 
-    const bit[31:0] receive_data_addr       = 32'd5;
+    const bit[31:0] frame_config_addr       = 32'd4;
+    const bit[31:0] parity_config_addr      = 32'd8;
+    const bit[31:0] stop_bits_config_addr   = 32'd12;
+    const bit[31:0] trans_data_addr         = 32'd16; 
+    const bit[31:0] receive_data_addr       = 32'd20;
 
     const int loop_time = 50;
     uvm_active_passive_enum is_active = UVM_ACTIVE;

@@ -9,12 +9,12 @@
 	`define		BR_128000				128000
 
 //------------------Addresses of Registers-------------------------------
-	`define		baud_config				0	
-	`define		frame_config			1
-	`define		parity_config			2
-	`define		stop_bits_config		3
-	`define		trans_data				4
-	`define		recv_data				5
+	`define		baud_config				'h00	
+	`define		frame_config			'h04
+	`define		parity_config			'h08
+	`define		stop_bits_config		'h0c
+	`define		trans_data				'h10
+	`define		recv_data				'h14
 //----------------------------------------------------
 	`define  	DATA_WIDTH				32
 	`define     ADDR_WIDTH				32

@@ -221,6 +221,14 @@ begin
 					stop_done	=	0;
 					
 				end
+				if (tick_count  == 14) begin
+                    if(RX != 1'b1) begin
+                        rx_error = 1'b1;
+                    end else begin
+                        rx_error = 1'b0;
+                    end
+				end
+
 			end
 		
 		RX_STOP_BIT2:
@@ -244,6 +252,14 @@ begin
 				begin
 					count_enable	=	1;
 					stop_done	=	0;
+				end
+				
+				if (tick_count  == 14) begin
+                    if(RX != 1'b1) begin
+                        rx_error = 1'b1;
+                    end else begin
+                        rx_error = 1'b0;
+                    end
 				end
 			end
 		RX_DONE_STATE:

@@ -30,6 +30,4 @@ class apb_transaction extends uvm_sequence_item;
         `uvm_field_int (PRDATA,UVM_ALL_ON)
     `uvm_object_utils_end
 	
-  constraint ADDRESS {PADDR <= 32'h5;}
-
 endclass 
