@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<!DOCTYPE cov SYSTEM "ucdb_fsm.dtd">
+  <fsm count="0"  noconst="0"  >
+    <ucapi_version  major_ver="13"  minor_ver="1"  patch_str="O-2018.09-SP2-4"  />
+      <fsmdef file="145"  name="uart_rx_BB"  lib=""  parameterized="1"  >
+        <fsmshape >
+          <fsmfsm name="p_state"  id="0"  width="3"  line="65"  chksum="1154894806"  >
+            <state name="IDLE"  value="parameterized"  id="0"  flag="L"  line="65"  />
+            <state name="RX_DATA_BITS"  value="parameterized"  id="1"  flag="L"  line="80"  />
+            <state name="RX_DONE_STATE"  value="parameterized"  id="2"  flag="L"  line="99"  />
+            <state name="RX_PARITY"  value="parameterized"  id="3"  flag="L"  line="89"  />
+            <state name="RX_START_BIT"  value="parameterized"  id="4"  flag="L"  line="74"  />
+            <state name="RX_STOP_BIT1"  value="parameterized"  id="5"  flag="L"  line="89"  />
+            <state name="RX_STOP_BIT2"  value="parameterized"  id="6"  flag="L"  line="99"  />
+
+            <transition fromid="0"  toid="4"  flag="L"  line="74"  />
+            
+            <transition fromid="1"  toid="0"  flag="L"  line="65"  />
+            <transition fromid="1"  toid="3"  flag="L"  line="89"  />
+            <transition fromid="1"  toid="5"  flag="L"  line="89"  />
+            
+            <transition fromid="2"  toid="0"  flag="L"  line="65"  />
+            
+            <transition fromid="3"  toid="0"  flag="L"  line="65"  />
+            <transition fromid="3"  toid="5"  flag="L"  line="94"  />
+            
+            <transition fromid="4"  toid="0"  flag="L"  line="65"  />
+            <transition fromid="4"  toid="1"  flag="L"  line="80"  />
+            
+            <transition fromid="5"  toid="0"  flag="L"  line="65"  />
+            <transition fromid="5"  toid="2"  flag="L"  line="99"  />
+            <transition fromid="5"  toid="4"  flag="L"  line="99"  />
+            <transition fromid="5"  toid="6"  flag="L"  line="99"  />
+            
+            <transition fromid="6"  toid="0"  flag="L"  line="65"  />
+            <transition fromid="6"  toid="2"  flag="L"  line="104"  />
+            <transition fromid="6"  toid="4"  flag="L"  line="104"  />
+            
+          </fsmfsm>
+        </fsmshape>
+        <fsminst name="top.DUT.apb_uart_instance.receiver_instance"  />
+      </fsmdef>
+      <fsmdef file="146"  name="uart_transmitter"  lib=""  parameterized="1"  >
+        <fsmshape >
+          <fsmfsm name="current_state"  id="0"  width="3"  line="126"  chksum="1760036962"  >
+            <state name="IDLE"  value="parameterized"  id="0"  flag="L"  line="126"  />
+            <state name="TX_DATA_BITS"  value="parameterized"  id="1"  flag="L"  line="142"  />
+            <state name="TX_DONE"  value="parameterized"  id="2"  flag="L"  line="163"  />
+            <state name="TX_FIRST_STOP_BIT"  value="parameterized"  id="3"  flag="L"  line="151"  />
+            <state name="TX_PARITY_BIT"  value="parameterized"  id="4"  flag="L"  line="149"  />
+            <state name="TX_SECOND_STOP_BIT"  value="parameterized"  id="5"  flag="L"  line="159"  />
+            <state name="TX_START_BIT"  value="parameterized"  id="6"  flag="L"  line="137"  />
+
+            <transition fromid="0"  toid="6"  flag="L"  line="137"  />
+            
+            <transition fromid="1"  toid="0"  flag="L"  line="126"  />
+            <transition fromid="1"  toid="3"  flag="L"  line="151"  />
+            <transition fromid="1"  toid="4"  flag="L"  line="149"  />
+            
+            <transition fromid="2"  toid="0"  flag="L"  line="126"  />
+            
+            <transition fromid="3"  toid="0"  flag="L"  line="126"  />
+            <transition fromid="3"  toid="2"  flag="L"  line="163"  />
+            <transition fromid="3"  toid="5"  flag="L"  line="159"  />
+            <transition fromid="3"  toid="6"  flag="L"  line="161"  />
+            
+            <transition fromid="4"  toid="0"  flag="L"  line="126"  />
+            <transition fromid="4"  toid="3"  flag="L"  line="155"  />
+            
+            <transition fromid="5"  toid="0"  flag="L"  line="126"  />
+            <transition fromid="5"  toid="2"  flag="L"  line="170"  />
+            <transition fromid="5"  toid="6"  flag="L"  line="168"  />
+            
+            <transition fromid="6"  toid="0"  flag="L"  line="126"  />
+            <transition fromid="6"  toid="1"  flag="L"  line="142"  />
+            
+          </fsmfsm>
+        </fsmshape>
+        <fsminst name="top.DUT.apb_uart_instance.transmtr_instance"  />
+      </fsmdef>
+          <metric_sig chksum="65346B85311F2B356F944DB142EE5F5060E09C14"  />
+    </fsm>

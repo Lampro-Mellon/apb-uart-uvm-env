@@ -1,0 +1,17 @@
+Instrument
+cond 3
+line 3
+fsm 65539
+tgl 8
+assign 0
+obc 0
+path 0
+branch 3
+Count 0
+Glitch -1
+cm_tglmda 0
+cm_tglstructarr 0
+cm_tglcount 0
+cm_hier 0
+TglUnpkdLimitVal -1
+cm_assert_hier 0

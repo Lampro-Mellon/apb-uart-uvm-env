@@ -37,6 +37,7 @@
 ./../uvm_tb/apbuart_base_test.sv 
 ./../uvm_tb/apbuart_property.sv 
 ./../uvm_tb/testbench.sv
+./../uvm_tb/top.sv
 ./../uvm_tb/apbuart_config_test.sv 
 ./../uvm_tb/apbuart_data_compare_test.sv 
 ./../uvm_tb/apbuart_parity_error_test.sv 
