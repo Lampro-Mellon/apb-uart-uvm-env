@@ -1,16 +1,20 @@
-module testbench (
-    output logic 			PCLK,
-    output logic 			PRESETn,
-    output logic 			PSELx,
-    output logic 			PENABLE,
-    output logic 			PWRITE,
-    output logic [32-1 : 0] PWDATA,
-    output logic [32-1 : 0] PADDR,
-    output logic            RX,
-    input  logic [32-1 : 0] PRDATA,
-    input  logic            PREADY,
-    input  logic            PSLVERR,
-    input  logic            Tx
+module testbench #(
+  parameter DATA_WIDTH = 32,
+  parameter ADDR_WIDTH = 32
+)
+(
+    output logic 					PCLK,
+    output logic 					PRESETn,
+    output logic 					PSELx,
+    output logic 					PENABLE,
+    output logic 					PWRITE,
+    output logic [DATA_WIDTH-1 : 0] PWDATA,
+    output logic [ADDR_WIDTH-1 : 0] PADDR,
+    output logic            		RX,
+    input  logic [DATA_WIDTH-1 : 0] PRDATA,
+    input  logic            		PREADY,
+    input  logic            		PSLVERR,
+    input  logic            		Tx
 );
 
   	bit pCLK;
@@ -31,9 +35,9 @@ module testbench (
   	assign vifapb.PSLVERR 	= PSLVERR;
   	assign vifapb.PREADY 	= PREADY;
   
- 	clk_rst_interface vifclk	(pRESETn, pCLK);
-  	apb_if            vifapb  	(PCLK,PRESETn);
-  	uart_if           vifuart 	(PCLK,PRESETn);
+ 	clk_rst_interface vifclk				(pRESETn, pCLK);
+  	apb_if  #(DATA_WIDTH,ADDR_WIDTH) vifapb (PCLK,PRESETn); 
+  	uart_if           vifuart 				(PCLK,PRESETn);
 
   	apbuart_property assertions (
                                 .PCLK(PCLK),

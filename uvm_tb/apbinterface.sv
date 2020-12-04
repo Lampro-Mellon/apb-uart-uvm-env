@@ -1,14 +1,18 @@
-interface apb_if (input PCLK, input PRESETn);
+interface apb_if #(
+  parameter DATA_WIDTH = 32,
+  parameter ADDR_WIDTH = 32
+)
+(input PCLK, input PRESETn);
 
   //Signals Declaration 
-    logic           PSELx;
-    logic           PENABLE;
-    logic           PWRITE;
-    logic           PREADY;
-    logic           PSLVERR;
-    logic [32-1:0]  PWDATA;
-    logic [32-1:0]  PADDR;
-    logic [32-1:0]  PRDATA;
+    logic                   PSELx;
+    logic                   PENABLE;
+    logic                   PWRITE;
+    logic                   PREADY;
+    logic                   PSLVERR;
+    logic [DATA_WIDTH-1:0]  PWDATA;
+    logic [ADDR_WIDTH-1:0]  PADDR;
+    logic [DATA_WIDTH-1:0]  PRDATA;
 
   //clocking blocks
   clocking driver_cb @(posedge PCLK);
