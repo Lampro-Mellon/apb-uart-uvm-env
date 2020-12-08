@@ -11,7 +11,11 @@ class apb_config extends uvm_object;
     rand bit[31:0] slave_Addr;
          bit[2:0]  psel_Index;
 
-    uvm_active_passive_enum is_active = UVM_ACTIVE;
+    `ifdef VIP_APB
+        uvm_active_passive_enum is_active = UVM_ACTIVE;
+    `else
+        uvm_active_passive_enum is_active = UVM_PASSIVE;
+    `endif        
 
     //  UVM Factory: Registration    
     `uvm_object_utils_begin(apb_config)

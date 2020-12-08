@@ -108,10 +108,22 @@ task apbuart_scoreboard::run_phase(uvm_phase phase);
 		if(apb_pkt_mon.PWRITE==1 && (apb_pkt_mon.PADDR == cfg.baud_config_addr || apb_pkt_mon.PADDR == cfg.frame_config_addr || apb_pkt_mon.PADDR == cfg.parity_config_addr || apb_pkt_mon.PADDR == cfg.stop_bits_config_addr))
 		begin
 			case(apb_pkt_mon.PADDR)
-				cfg.baud_config_addr : baud_rate_reg 		=  apb_pkt_mon.PWDATA;
-				cfg.frame_config_addr : frame_len_reg 		=  apb_pkt_mon.PWDATA;
-				cfg.parity_config_addr : parity_reg 		=  apb_pkt_mon.PWDATA;
-				cfg.stop_bits_config_addr : stopbit_reg 	=  apb_pkt_mon.PWDATA;
+				cfg.baud_config_addr : begin
+					baud_rate_reg 		=  apb_pkt_mon.PWDATA;
+					cfg.bRate 			=  apb_pkt_mon.PWDATA;
+				end 
+				cfg.frame_config_addr : begin
+					frame_len_reg 		=  apb_pkt_mon.PWDATA;
+					cfg.frame_len		=  apb_pkt_mon.PWDATA;
+				end	
+				cfg.parity_config_addr : begin
+					parity_reg 			=  apb_pkt_mon.PWDATA;
+					cfg.parity			=  apb_pkt_mon.PWDATA;
+				end 
+				cfg.stop_bits_config_addr : begin
+					stopbit_reg 		=  apb_pkt_mon.PWDATA;
+					cfg.n_sb			=  apb_pkt_mon.PWDATA;
+				end
 				default : `uvm_error(get_type_name(),$sformatf("------ :: Incorrect Config Address :: ------"))
 			endcase
 		end 

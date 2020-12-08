@@ -3,45 +3,70 @@ module testbench #(
   parameter ADDR_WIDTH = 32
 )
 (
-    output logic 					PCLK,
-    output logic 					PRESETn,
-    output logic 					PSELx,
-    output logic 					PENABLE,
-    output logic 					PWRITE,
-    output logic [DATA_WIDTH-1 : 0] PWDATA,
-    output logic [ADDR_WIDTH-1 : 0] PADDR,
-    output logic            		RX,
-    input  logic [DATA_WIDTH-1 : 0] PRDATA,
-    input  logic            		PREADY,
-    input  logic            		PSLVERR,
+	`ifdef VIP_APB
+		`ifdef VIP_CLK
+		output logic 				t_PCLK,
+    	output logic 				t_PRESETn,
+		`else
+		input logic 				t_PCLK,
+    	input logic 				t_PRESETn,
+		`endif
+	output logic 					t_PSELx,
+    output logic 					t_PENABLE,
+    output logic 					t_PWRITE,
+    output logic [DATA_WIDTH-1 : 0] t_PWDATA,
+    output logic [ADDR_WIDTH-1 : 0] t_PADDR,
+    `else
+	input  logic 					t_PCLK,
+    input  logic 					t_PRESETn,
+    input  logic 					t_PSELx,
+    input  logic 					t_PENABLE,
+    input  logic 					t_PWRITE,
+    input  logic [DATA_WIDTH-1 : 0] t_PWDATA,
+    input  logic [ADDR_WIDTH-1 : 0] t_PADDR,
+	`endif
+	input  logic [DATA_WIDTH-1 : 0] t_PRDATA,
+    input  logic            		t_PREADY,
+    input  logic            		t_PSLVERR,
+	output logic            		RX,
     input  logic            		Tx
 );
 
   	bit pCLK;
   	bit pRESETn;
 
-  	assign PCLK 	= 	pCLK;
-  	assign PRESETn 	= 	pRESETn;
-
-  	assign PSELx  	=  	vifapb.PSELx;
-  	assign PENABLE	=  	vifapb.PENABLE;
-  	assign PWRITE 	=  	vifapb.PWRITE;
-  	assign PWDATA 	=  	vifapb.PWDATA;
-  	assign PADDR  	=  	vifapb.PADDR;
-  	assign RX     	=  	vifuart.RX;
-
+	`ifdef VIP_APB
+  		assign t_PSELx  		=  	vifapb.PSELx;
+  		assign t_PENABLE		=  	vifapb.PENABLE;
+  		assign t_PWRITE 		=  	vifapb.PWRITE;
+  		assign t_PWDATA 		=  	vifapb.PWDATA;
+  		assign t_PADDR  		=  	vifapb.PADDR;
+		`ifdef VIP_CLK
+			assign t_PCLK 		= 	pCLK;
+  			assign t_PRESETn 	= 	pRESETn;
+			clk_rst_interface vifclk	(pRESETn, pCLK);
+		`endif
+	`else
+		assign vifapb.PSELx  	=  	t_PSELx;
+  		assign vifapb.PENABLE	=  	t_PENABLE;
+  		assign vifapb.PWRITE 	=  	t_PWRITE;
+  		assign vifapb.PWDATA 	=  	t_PWDATA;
+  		assign vifapb.PADDR  	=  	t_PADDR;
+	`endif
+  	
+	assign RX     			= vifuart.RX;
   	assign vifuart.Tx 		= Tx;
-  	assign vifapb.PRDATA 	= PRDATA;
-  	assign vifapb.PSLVERR 	= PSLVERR;
-  	assign vifapb.PREADY 	= PREADY;
+  	assign vifapb.PRDATA 	= t_PRDATA;
+  	assign vifapb.PSLVERR 	= t_PSLVERR;
+  	assign vifapb.PREADY 	= t_PREADY;
   
- 	clk_rst_interface vifclk				(pRESETn, pCLK);
-  	apb_if  #(DATA_WIDTH,ADDR_WIDTH) vifapb (PCLK,PRESETn); 
-  	uart_if           vifuart 				(PCLK,PRESETn);
+ 	
+  	apb_if  #(DATA_WIDTH,ADDR_WIDTH) vifapb  (t_PCLK,t_PRESETn); 
+  	uart_if           				 vifuart (t_PCLK,t_PRESETn);
 
   	apbuart_property assertions (
-                                .PCLK(PCLK),
-                                .PRESETn(PRESETn),
+                                .PCLK(t_PCLK),
+                                .PRESETn(t_PRESETn),
                                 .PSELx(vifapb.PSELx),
                                 .PENABLE(vifapb.PENABLE),
                                 .PWRITE(vifapb.PWRITE),
