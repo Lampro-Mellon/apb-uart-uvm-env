@@ -1,0 +1,16 @@
+Following changes has been done for the Methodology-team(Semifive).
+
+>>>>  One can comment the clk_rst_interface instantiation in the testbench.sv,
+      this will disable the clock agent. For the case it is also needed to connect the RC clock and reset to the testbench. 
+    
+>>>>  Modified the Monitor and Scoreboard to account for stimulus from core.
+
+>>>>  Both the APB-agent and UART-agent can be configured as ACTIVE/PASSIVE mode.
+
+>>>>  Monitor and Scoreboard classes have been modified to account for stimulus from core.
+
+>>>>  Ports of VIP wrapper should be input when in passive mode, and output in active mode.
+
+>>>>  Modified the VIP to disintegrate APB agent and include only the TX & RX signals with clock & reset signals.
+
+>>>>  Make the Clock Agent active.
