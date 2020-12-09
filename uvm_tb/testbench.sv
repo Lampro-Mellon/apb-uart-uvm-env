@@ -3,19 +3,27 @@ module testbench #(
   parameter ADDR_WIDTH = 32
 )
 (
-	input  logic 				t_PCLK,
-    input  logic 				t_PRESETn,
 	output logic            	RX,
     input  logic            	Tx
 );
 
-	assign RX     			= vifuart.RX;
-  	assign vifuart.Tx 		= Tx;
+	bit pCLK;
+  	bit pRESETn;
 
+	bit t_CLK;
+  	bit t_RESETn;
+
+	assign t_PCLK 		= pCLK;
+  	assign t_PRESETn 	= pRESETn;
+			
+	assign RX     		= vifuart.RX;
+  	assign vifuart.Tx 	= Tx;
+
+	clk_rst_interface 				 vifclk	 (pRESETn, pCLK);
   	apb_if  #(DATA_WIDTH,ADDR_WIDTH) vifapb  (t_PCLK,t_PRESETn); 
   	uart_if           				 vifuart (t_PCLK,t_PRESETn);
 
-  	apbuart_property assertions (
+  	/*apbuart_property assertions (
                                 .PCLK(t_PCLK),
                                 .PRESETn(t_PRESETn),
                                 .PSELx(vifapb.PSELx),
@@ -27,6 +35,7 @@ module testbench #(
                                 .PADDR(vifapb.PADDR),
                                 .PRDATA(vifapb.PRDATA)
                               );
+	*/
   	initial
   	begin
     	uvm_config_db # (virtual apb_if)::set(uvm_root::get(),"*","vifapb",vifapb);
