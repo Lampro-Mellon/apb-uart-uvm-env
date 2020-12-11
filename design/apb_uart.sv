@@ -1,3 +1,6 @@
+//`include "tick_generator.sv"
+//`include "uart_rx_BB.sv"
+//`include "uart_transmitter.sv"
 module apb_uart
 (
   input 	logic PCLK,
@@ -16,8 +19,7 @@ module apb_uart
   output	logic Tx 
 );
 
- 
-logic config_done;
+logic opt_done;
 logic config_error;
 
 //transmitter
@@ -28,6 +30,7 @@ logic tx_tick_1;
 // receiver
 logic RX_done;
 logic RX_ERROR;
+logic RX_PERROR;
 logic RX_tick_1; 
 
 /*Output signals of configuration Registers*/
@@ -35,8 +38,10 @@ logic [((`BAUD_CONFIG_REG_SIZE)-1):0] BAUD_RATE;
 logic [3:0] frame_length;
 logic [1:0] parity_signal;
 logic stop_bits;
-logic [((`DATA_WIDTH)-1):0]PRDATA_config;
-logic [((`DATA_WIDTH)-1):0] RX_PRDATA;
+//logic [((`DATA_WIDTH)-1):0]PRDATA_config;
+//logic [((`DATA_WIDTH)-1):0] RX_PRDATA;
+logic [((`DATA_WIDTH)-1):0] RX_DATA;
+
 
 
 /*signals telling transaction type*/
@@ -73,16 +78,17 @@ reg [1:0] parity_enable_type_reg;
 /*Stop bits configuration register: default = 1 bit*/
 reg stop_bits_config_reg;
 
+reg [31:0] receiver_reg;
+
 //---------------------------------------------------------------------------------------//
 
 assign BAUD_RATE		=	baud_config_reg;
 assign frame_length 	=   frame_length_reg;
 assign parity_signal	=	parity_enable_type_reg;
 assign stop_bits		=	stop_bits_config_reg;
-assign ready			=	(config_done  ||  TX_done || RX_done);
-assign error			=   (config_error || TX_ERROR || RX_ERROR);
-assign read_data		=	(RX_detect)?(RX_PRDATA):((config_read_detect)?(PRDATA_config):('bz));
-
+assign ready			=	(opt_done  ||  TX_done );
+assign error			=   (RX_detect)? RX_PERROR:(config_error || TX_ERROR);
+//assign read_data		=	(RX_detect)?(RX_PRDATA):((config_read_detect)?(PRDATA_config):('bz));
 
 //--------------------writing and reading configuration registers----------------------//
 always @ (posedge PCLK)  begin
@@ -93,71 +99,89 @@ always @ (posedge PCLK)  begin
 	parity_enable_type_reg	<=	2'd0;
 	stop_bits_config_reg 	<= 	1'd0;
 	config_error			<=	1'b0;
-	config_done				<=	1'b0;
-	PRDATA_config			<=	{`DATA_WIDTH{1'b0}};
+	opt_done				<=	1'b0;
+	//PRDATA_config			<=	{`DATA_WIDTH{1'b0}};
+	read_data				<=	{`DATA_WIDTH{1'b0}};
 	end
 
 /*Writing and Reading Baud Configuration Register*/
 	else if (baud_config_write_valid) begin
 	baud_config_reg	<=	write_data_in[(`BAUD_CONFIG_REG_SIZE-1):0];      
-	config_done		<=	1'b1;
+	opt_done		<=	1'b1;
 	end
 
 	else if (baud_config_read_valid)begin
-		PRDATA_config	<=	baud_config_reg;
-		config_done		<=	1'b1;
+		//PRDATA_config	<=	baud_config_reg;
+		read_data		<=	baud_config_reg;
+		opt_done		<=	1'b1;
 	end
 
 /*Writing and Reading Frame Configuration Register*/
 else if (frame_config_write_valid)
 begin
 	frame_length_reg <=	write_data_in[3:0];       
-	config_done		 <=	1'b1;
+	opt_done		 <=	1'b1;
 end
 
 else if (frame_config_read_valid)
 begin
-	PRDATA_config	<=	frame_length_reg;
-	config_done	<=	1'b1;
+	//PRDATA_config	<=	frame_length_reg;
+	read_data		<=	frame_length_reg;
+	opt_done		<=	1'b1;
 end
 
 /*Writing and Reading Parity Configuration Register*/
 else if (parity_config_write_valid)
 begin
 	parity_enable_type_reg 	<=	write_data_in[1:0];      
-	config_done		 		<=	1'b1;
+	opt_done		 		<=	1'b1;
 end
 
 else if (parity_config_read_valid)
 begin
-	PRDATA_config	<=	parity_enable_type_reg;
-	config_done	<=	1'b1;
+	//PRDATA_config	<=	parity_enable_type_reg;
+	read_data		<=	parity_enable_type_reg;
+	opt_done		<=	1'b1;
 end
 
 /*Writing and Reading Stop Bits Configuration Register*/
 else if (SBITS_config_write_valid)
 begin
 	stop_bits_config_reg 	<=	write_data_in[0];         
-	config_done		 		<=	1'b1;
+	opt_done		 		<=	1'b1;
 end
 
 else if (SBITS_config_read_valid)
 begin
-	PRDATA_config	<=	stop_bits_config_reg;
-	config_done	<=	1'b1;
+	//PRDATA_config	<=	stop_bits_config_reg;
+	read_data		<=	stop_bits_config_reg;
+	opt_done		<=	1'b1;
 end
 
+/*Reading and Writing on Receiver Register*/
+else if (RX_detect)
+begin
+//	RX_PRDATA	<=	receiver_reg;
+	read_data	<=	receiver_reg;
+	opt_done	<=	1'b1;
+end
+else if (RX_done)
+begin
+	receiver_reg 			<=	RX_DATA;
+	RX_PERROR				<=	RX_ERROR;
+end
 else
 begin
 	baud_config_reg			<=	baud_config_reg;
 	frame_length_reg		<=  frame_length_reg;
 	parity_enable_type_reg	<=	parity_enable_type_reg;
 	stop_bits_config_reg	<=	stop_bits_config_reg;
-	config_done				<=	1'b0;						
-	PRDATA_config			<=	'bz;          
+	opt_done				<=	1'b0;						
+	//PRDATA_config			<=	'bz;         
 	config_error 			<=	1'b0;
+	read_data				<=	'bz;
 end
-	
+
 end
 
 /*Baud Rate Generator Module Instantiation*/
@@ -185,12 +209,12 @@ uart_transmitter		 transmtr_instance 	(.tx_tick(tx_tick_1),
 uart_rx_BB	receiver_instance	         (.rx_tick(RX_tick_1),
 			    	 		 		  .PRESETn (PRESETn),
 			    			 		  .RX(RX),
-				     		 		  .RX_detect(RX_detect),
+				     		 		  .RX_detect(1'b1),
 							 		  .frame_length(frame_length),
 							 		  .parity(parity_signal),
 							 		  .stop_bit(stop_bits),		
 			    	 		 		  .rx_done(RX_done),
-			     			 		  .rx_error (RX_ERROR),
-			    	 		 		  .rx_data_out(RX_PRDATA)
+			     			 		  .prx_error (RX_ERROR),
+			    	 		 		  .rx_data_out(RX_DATA)
 									);
 endmodule

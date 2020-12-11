@@ -1,3 +1,4 @@
+
 module apb_slave(
  	 /*Input Signals from APB Master*/
 	 input logic PCLK,
@@ -32,7 +33,7 @@ module apb_slave(
 	assign 	config_read_detect  = PSELx && PENABLE && (~PWRITE) && config_temp;
 	assign	config_address		= PADDR;
 	assign  write_data			= PWDATA;
-	assign	PRDATA				= read_data;
-	assign 	PREADY				= ready;
-	assign	PSLVERR				= error;
+	assign	PRDATA				= read_data;//(PSELx && PENABLE)?read_data:'bz;
+	assign 	PREADY				= ready;//(PSELx && PENABLE)?ready:1'bz;
+	assign	PSLVERR				= error;//(PSELx && PENABLE)?error:1'bz;
 endmodule
