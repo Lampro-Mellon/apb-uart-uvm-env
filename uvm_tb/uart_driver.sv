@@ -74,6 +74,7 @@ task uart_driver::get_and_drive();
 	uart_transaction req;
 	forever 
 	begin
+    `DRIVUART_IF.RX <= 1'b1 ;
 	  @(posedge vifuart.PCLK iff (vifuart.PRESETn))
 	  seq_item_port.get_next_item(req);
     trans_collected.payload = req.payload;
@@ -111,7 +112,8 @@ task uart_driver::drive_rx(uart_transaction req);
         end 
         else if ((no_bits_sent > 0) && (no_bits_sent < (1 + cfg.frame_len))) 
         begin
-          `DRIVUART_IF.RX <= req.payload[pay_offset + (no_bits_sent-1)];                   // sending data bits
+          `DRIVUART_IF.RX <= req.payld_func[pay_offset + (no_bits_sent-1)];                   // sending data bits
+          `uvm_info(get_type_name(),$sformatf("Driver Sending Data bits:'b%b",(req.payld_func[pay_offset + (no_bits_sent-1)])), UVM_HIGH)
           no_bits_sent++;
         end 
         else if ((no_bits_sent == (1+cfg.frame_len)) && cfg.parity[1]) 
@@ -124,20 +126,18 @@ task uart_driver::drive_rx(uart_transaction req);
         begin
           for (int i=0; i <= cfg.n_sb; i++) 
           begin
-            `uvm_info(get_type_name(),
-               $sformatf("Driver Sending Frame Stop bit:'b%b",
-               req.stop_bits[i]), UVM_HIGH)
             if (req.sb_corr) 
             begin
               `DRIVUART_IF.RX <= 0;                                                        // sending corrupt stop bits
               no_bits_sent++;
               `uvm_info(get_type_name(),
                  $sformatf("Driver intensionally corrupting Stop bit since error_bits['b%b] is 'b%b", i, req.sb_corr),
-                 UVM_HIGH) 
+                 UVM_LOW) 
             end 
             else 
             begin
             `DRIVUART_IF.RX <= req.stop_bits[i];                                           // Sending accurate stop bits
+            `uvm_info(get_type_name(),$sformatf("Driver Sending Frame Stop bit:'b%b",req.stop_bits[i]), UVM_HIGH)
              no_bits_sent++;
             end
           end 
@@ -146,5 +146,6 @@ task uart_driver::drive_rx(uart_transaction req);
       pay_offset += cfg.frame_len;
       no_bits_sent = 0;
   end
+      repeat(cfg.baud_rate)@(posedge vifuart.PCLK);
 endtask: drive_rx
 

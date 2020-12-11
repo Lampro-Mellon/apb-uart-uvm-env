@@ -14,3 +14,5 @@ Following changes has been done for the Methodology-team(Semifive).
 >>>>  Modified the VIP to disintegrate APB agent and include only the TX & RX signals with clock & reset signals.
 
 >>>>  Make the Clock Agent active.
+
+>>>>  Modified the test classes to test the updated feature of design (RX-freerunning).

@@ -31,7 +31,6 @@ class clk_rst_monitor extends uvm_monitor;
   endfunction: build_phase
 
   virtual task run_phase(uvm_phase phase);
-    $display("Hello I m here in Monitor");
     fork
       collect_clk();
       collect_rst();
