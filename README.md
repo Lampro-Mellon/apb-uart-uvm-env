@@ -1,5 +1,5 @@
 **INTRODUCTION:**  
-  This repo contains the UVM environment for APB based UART.  
+  This repo contains the UVM environment for APB based  Updated UART (RX-FreeRunning).    
 
 **AVAILABLE TEST CASES:**  
   1. apbuart_config_test  
