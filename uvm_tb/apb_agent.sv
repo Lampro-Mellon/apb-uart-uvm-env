@@ -1,3 +1,10 @@
+`include "apb_transaction.sv"
+`include "uart_config.sv"
+`include "apb_config.sv"
+`include "apb_sequence.sv"
+`include "apb_sequencer.sv"
+`include "apb_driver.sv"
+`include "apb_monitor.sv"
 class apb_agent extends uvm_agent;
   
 	`uvm_component_utils(apb_agent)

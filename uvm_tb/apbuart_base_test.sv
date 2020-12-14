@@ -1,3 +1,4 @@
+`include "apbuart_environment.sv"
 class apbuart_base_test extends uvm_test;
 	`uvm_component_utils(apbuart_base_test)
 

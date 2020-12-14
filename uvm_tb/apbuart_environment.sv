@@ -1,3 +1,10 @@
+`include "apb_agent.sv"
+`include "uart_agent.sv"
+`include "clk_agent.sv"
+`include "apbuart_scoreboard.sv"
+`include "apbuart_vsequencer.sv"
+`include "apbuart_vseq_base.sv"
+
 class apbuart_env extends uvm_env;
   
 	`uvm_component_utils(apbuart_env)

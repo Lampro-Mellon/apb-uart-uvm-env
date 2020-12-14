@@ -1,3 +1,11 @@
+`include "clk_config.sv"
+`include "clk_sequencer.sv"
+`include "clk_transaction.sv"
+`include "clk_rst_pkg.sv"
+`include "clk_sequence.sv"
+`include "clk_driver.sv"
+`include "clk_monitor.sv"
+
 class clk_rst_agent extends uvm_agent;
 
   //clk_rst_monitor   monitor;

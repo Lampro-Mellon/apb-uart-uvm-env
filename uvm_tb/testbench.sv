@@ -1,4 +1,17 @@
-module testbench #(
+`include "clkinterface.sv"
+`include "apbinterface.sv"
+`include "uartinterface.sv" 
+`include "apbuart_base_test.sv"
+`include "apbuart_frame_error_test.sv"
+`include "apbuart_free_error_test.sv"
+`include "apbuart_parity_error_test.sv"
+`include "apbuart_rec_drv_test.sv"
+`include "apbuart_rec_readreg_test.sv"
+`include "apbuart_config_test.sv"
+`include "apbuart_data_compare_test.sv"
+
+
+module testbench #(       
   parameter DATA_WIDTH = 32,
   parameter ADDR_WIDTH = 32
 )

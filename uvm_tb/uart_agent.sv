@@ -1,3 +1,9 @@
+`include "uart_transaction.sv"
+`include "uart_sequence.sv"
+`include "uart_sequencer.sv"
+`include "uart_driver.sv"
+`include "uart_monitor.sv"
+
 class uart_agent extends uvm_agent;
   
 	`uvm_component_utils(uart_agent)
