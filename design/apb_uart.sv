@@ -86,10 +86,10 @@ assign BAUD_RATE		=	baud_config_reg;
 assign frame_length 	=   frame_length_reg;
 assign parity_signal	=	parity_enable_type_reg;
 assign stop_bits		=	stop_bits_config_reg;
-assign ready			=	(opt_done  ||  TX_done );
-assign error			=   (RX_detect)? RX_PERROR:(config_error || TX_ERROR);
+assign ready			=	opt_done || (TX_detect && TX_done );
 //assign read_data		=	(RX_detect)?(RX_PRDATA):((config_read_detect)?(PRDATA_config):('bz));
-
+always@(posedge PCLK)
+	error			=   (RX_detect)? RX_PERROR:(config_error || TX_ERROR);
 //--------------------writing and reading configuration registers----------------------//
 always @ (posedge PCLK)  begin
 

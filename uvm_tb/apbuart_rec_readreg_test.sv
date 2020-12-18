@@ -7,6 +7,7 @@ class apbuart_rec_readreg_test extends apbuart_base_test;
     apbuart_frameError_seq 	    apbuart_frm_err_sq;
     apbuart_recdrv_seq 	        apbuart_drv_random_sq;
     apbuart_recreadreg_seq      apbuart_read_rcv_reg_sq; 
+    apbuart_singlebeat_seq      apbuart_transmission_sq;
     function new (string name, uvm_component parent= null);
       	super.new(name, parent);
     endfunction
@@ -22,14 +23,15 @@ function void apbuart_rec_readreg_test::build_phase (uvm_phase phase);
     apbuart_no_err_sq       = apbuart_NoError_seq::type_id::create("apbuart_no_err_sq",this);
     apbuart_part_err_sq     = apbuart_parityError_seq::type_id::create("apbuart_part_err_sq",this);
     apbuart_frm_err_sq      = apbuart_frameError_seq::type_id::create("apbuart_frm_err_sq",this);
+    apbuart_transmission_sq = apbuart_singlebeat_seq::type_id::create("apbuart_transmission_sq",this);
     apbuart_drv_random_sq   = apbuart_recdrv_seq::type_id::create("apbuart_drv_random_sq",this);
     apbuart_read_rcv_reg_sq = apbuart_recreadreg_seq::type_id::create("apbuart_read_rcv_reg_sq",this);
 endfunction
 
 task apbuart_rec_readreg_test::run_phase(uvm_phase phase);
-    repeat(10)
+    repeat(cfg.loop_time)
     begin
-        set_config_params(9600,8,3,1,1); // Baud Rate , Frame Len , Parity , Stop Bit , Randomize Flag (1 for random , 0 for directed)
+        set_config_params(9600,7,3,1,1); // Baud Rate , Frame Len , Parity , Stop Bit , Randomize Flag (1 for random , 0 for directed)
         cfg.print();
         phase.raise_objection (.obj(this));
         apbuart_confg_sq.start(env_sq.v_sqr);

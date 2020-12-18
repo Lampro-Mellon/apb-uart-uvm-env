@@ -77,9 +77,10 @@ task uart_driver::get_and_drive();
     `DRIVUART_IF.RX <= 1'b1 ;
 	  @(posedge vifuart.PCLK iff (vifuart.PRESETn))
 	  seq_item_port.get_next_item(req);
-    trans_collected.payload = req.payload;
-    trans_collected.bad_parity = req.bad_parity;
-    trans_collected.sb_corr = req.sb_corr;
+    trans_collected.payload     = req.payload;
+    trans_collected.bad_parity  = req.bad_parity;
+    trans_collected.sb_corr     = req.sb_corr;
+    trans_collected.sb_corr_bit = req.sb_corr_bit;
     cfg_settings();
 	  drive_rx(req);
     item_collected_port_drv.write(trans_collected);
@@ -99,7 +100,8 @@ task uart_driver::drive_rx(uart_transaction req);
   logic [5:0] pay_offset = 0;
   logic [3:0] parity_of_frame = 0;
   logic [6:0] temp;                                                                       //for storing parity bits of all max 7 frames
-  temp = req.calc_parity(req.payload,cfg.frame_len, req.bad_parity, cfg.parity[0]); 
+  temp = req.calc_parity(req.payload,cfg.frame_len, req.bad_parity, cfg.parity[0], req.bad_parity_frame); 
+  //$display("\t\tsb_corr::%0b   sb_corr_bit::%0b sb_corr_frame::%0b  \n ",req.sb_corr,req.sb_corr_bit,req.sb_corr_frame);
   for(int i=0;i<LT;i++) 
   begin
       while (no_bits_sent < ((1 + cfg.frame_len + cfg.parity[1] + (cfg.n_sb+1)) )) 
@@ -124,20 +126,22 @@ task uart_driver::drive_rx(uart_transaction req);
         end 
         else 
         begin
-          for (int i=0; i <= cfg.n_sb; i++) 
+          for (int j=0; j <= cfg.n_sb; j++) 
           begin
-            if (req.sb_corr) 
+            if(j==1)
+              repeat(cfg.baud_rate)@(posedge vifuart.PCLK);
+            if (req.sb_corr && req.sb_corr_bit[j] && req.sb_corr_frame[i]) 
             begin
+            //$display("\tCORRUPTING   stop bit# %0d of   frame# %0d ",j,i);
               `DRIVUART_IF.RX <= 0;                                                        // sending corrupt stop bits
               no_bits_sent++;
-              `uvm_info(get_type_name(),
-                 $sformatf("Driver intensionally corrupting Stop bit since error_bits['b%b] is 'b%b", i, req.sb_corr),
-                 UVM_LOW) 
+              `uvm_info(get_type_name(),$sformatf("Driver intensionally corrupting Stop bit since error_bits['b%b] is 'b%b", j, req.sb_corr),UVM_HIGH) 
             end 
             else 
             begin
-            `DRIVUART_IF.RX <= req.stop_bits[i];                                           // Sending accurate stop bits
-            `uvm_info(get_type_name(),$sformatf("Driver Sending Frame Stop bit:'b%b",req.stop_bits[i]), UVM_HIGH)
+            //$display("\tNOT-corrup   stop bit# %0d of   frame# %0d ",j,i);
+            `DRIVUART_IF.RX <= req.stop_bits[j];                                           // Sending accurate stop bits
+            `uvm_info(get_type_name(),$sformatf("Driver Sending Frame Stop bit#%0d::'b%b",j,req.stop_bits[j]), UVM_HIGH)
              no_bits_sent++;
             end
           end 
@@ -147,5 +151,6 @@ task uart_driver::drive_rx(uart_transaction req);
       no_bits_sent = 0;
   end
       repeat(cfg.baud_rate)@(posedge vifuart.PCLK);
+      `DRIVUART_IF.RX <= 1;
 endtask: drive_rx
 

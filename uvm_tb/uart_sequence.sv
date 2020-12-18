@@ -70,6 +70,6 @@ task err_free_test_uart::body();
 	`uvm_do_with(uart_sq,{
 							uart_sq.bad_parity  == 1'b0;
 							uart_sq.sb_corr 	== 1'b0;
-							uart_sq.payload 	== 32'h11223344;   
+							//uart_sq.payload 	== 32'h11223344;   
 						 }) 
 endtask
