@@ -121,8 +121,8 @@ module uart_transmitter
 //----------------------------STATE Register-----------------------------//
 //----------------------------STATE Register-----------------------------//
 //----------------------------STATE Register-----------------------------//
-	always @ (posedge tx_tick or negedge PRESETn) begin 
-		if (~PRESETn)
+	always @ (posedge tx_tick or negedge PRESETn or negedge TX_detect) begin 
+		if (!PRESETn || !TX_detect)
 			current_state <= IDLE;			 
 		else 
 			current_state <= next_state;

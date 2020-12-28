@@ -23,30 +23,51 @@ parameter RX_CLOCK_COUNT_REG = 11		//Bcz Max Clock Count will be 1302 (For Recei
 //Registers that will Hold Value How Much to Count (For Comparison)
 	reg[(TX_CLOCK_COUNT_REG-1):0]			tx_reg;			// Register to store Configured Clock Count Value (14)
 	reg[(RX_CLOCK_COUNT_REG-1):0]			rx_reg;			// Register to store Configured Clock Count Value (11)
-	
+
+	reg[(TX_CLOCK_COUNT_REG-1):0]           tx_reg_prev; // to store previous value
+    reg[(RX_CLOCK_COUNT_REG-1):0]           rx_reg_prev; // to store previous value
 	
 	always@(posedge clk) begin
-		if(!resetn)begin 
-			rx_clk_count<= {RX_CLOCK_COUNT_REG{1'b0}};
-			tx_clk_count<= {TX_CLOCK_COUNT_REG{1'b0}};
-		end//if
+        if(!resetn)begin
+            rx_reg_prev <= {RX_CLOCK_COUNT_REG{1'b0}};
+            tx_reg_prev <= {TX_CLOCK_COUNT_REG{1'b0}};
+        end//if
+		else begin
+        	rx_reg_prev     <= rx_reg;
+        	tx_reg_prev     <= tx_reg;
+		end
+    end
+
+	always@(posedge clk) begin
+    	if(!resetn)begin
+    	    rx_clk_count<= {RX_CLOCK_COUNT_REG{1'b0}};
+    	    tx_clk_count<= {TX_CLOCK_COUNT_REG{1'b0}};
+    	end//if
     	else begin
-			if(rx_tick ) 
-				rx_clk_count<= {RX_CLOCK_COUNT_REG{1'b0}};
-			else 
-				rx_clk_count <= rx_clk_count + 1'b1;
-			if(tx_tick ) 
-				tx_clk_count<= {TX_CLOCK_COUNT_REG{1'b0}};
-			else 
-				tx_clk_count <= tx_clk_count + 1'b1;
-		end//else
-	end//always
+    	    if(rx_tick )
+    	        rx_clk_count<= {RX_CLOCK_COUNT_REG{1'b0}};
+    	    else begin
+    	        if(rx_reg != rx_reg_prev)
+    	        rx_clk_count<= 'b1;
+    	        else
+    	        rx_clk_count <= rx_clk_count + 1'b1;
+    	    end
+    	    if(tx_tick )
+    	        tx_clk_count<= {TX_CLOCK_COUNT_REG{1'b0}};
+    	    else begin
+    	        if(tx_reg != tx_reg_prev)
+    	            tx_clk_count<= 'b1;
+    	        else
+    	            tx_clk_count <= tx_clk_count + 1'b1;
+    	    end
+    	end//else
+    end//always
 
 //Case to Drive Input Values on Baud Rate Register (Receiver and Transmitter)
 	always@(posedge clk) begin
 		if(!resetn)begin
 			rx_reg <= {RX_CLOCK_COUNT_REG{1'b0}};
-			tx_reg <= 14'd5308;;
+			tx_reg <= 14'd5208;
 			end//if
 		else begin 		
 			case(baud_rate)

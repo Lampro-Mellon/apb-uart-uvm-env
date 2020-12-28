@@ -1,7 +1,7 @@
 class apbuart_config_test extends apbuart_base_test;
 	`uvm_component_utils (apbuart_config_test)
 
-	apbuart_config_seq  			apbuart_sq; // all configuration for write and read configuration
+	apbuart_config_seq          apbuart_confg_sq; // all configuration for write and read configuration
 
 	function new (string name, uvm_component parent= null);
 	  	super.new(name, parent);
@@ -14,7 +14,7 @@ endclass
 
 function void apbuart_config_test::build_phase (uvm_phase phase);
 	super.build_phase(phase);
-	apbuart_sq  = apbuart_config_seq::type_id::create("apbuart_sq",this);
+	apbuart_confg_sq  = apbuart_config_seq::type_id::create("apbuart_confg_sq",this);
 endfunction
 
 task apbuart_config_test::run_phase(uvm_phase phase);
@@ -25,7 +25,7 @@ task apbuart_config_test::run_phase(uvm_phase phase);
 		set_apbconfig_params(2,1);		 // Slave Bus Address , Randomize Flag (1 for random , 0 for directed)
 		apb_cfg.print();
 		phase.raise_objection(.obj(this));
-		apbuart_sq.start(env_sq.v_sqr);
+		apbuart_confg_sq.start(env_sq.v_sqr);
 		phase.drop_objection(.obj(this));
 	end
     	phase.phase_done.set_drain_time(this, 20);

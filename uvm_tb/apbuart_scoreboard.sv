@@ -190,8 +190,11 @@ function void apbuart_scoreboard::compare_receive (apb_transaction apb_pkt , uar
     	`uvm_error(get_type_name(),$sformatf("------ :: Reciever Data Packet MisMatch :: ------"))
 	`uvm_info(get_type_name(),$sformatf("Expected Reciever Data Value : %0h Actual Reciever Data Value: %0h",uart_pkt.payload,apb_pkt.PRDATA),UVM_LOW)
 	`uvm_info(get_type_name(),"------------------------------------\n",UVM_LOW)
-	if((uart_pkt.bad_parity && cfg.parity[1]) || uart_pkt.sb_corr)
+	//$display("uart_pkt.sb_corr::%0b\tuart_pkt.sb_corr_bit[0]::%0b\tcfg.n_sb::%d",uart_pkt.sb_corr,uart_pkt.sb_corr_bit,cfg.parity[1]);
+	if((uart_pkt.bad_parity && cfg.parity[1]) || (uart_pkt.sb_corr && (cfg.n_sb || uart_pkt.sb_corr_bit[0])))
 	begin
+		//$display("uart_pkt.sb_corr::%0b\tuart_pkt.sb_corr_bit[0]::%0b\tcfg.n_sb::%d",uart_pkt.sb_corr,uart_pkt.sb_corr_bit[0],cfg.n_sb[0]);
+
 		if(apb_pkt.PSLVERR == 1'b1)
 			`uvm_info(get_type_name(),$sformatf("------ :: Error Match :: ------"),UVM_LOW)
 		else

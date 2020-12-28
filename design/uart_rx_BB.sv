@@ -9,16 +9,16 @@ module uart_rx_BB (
 	
 		output	logic	[`DATA_WIDTH-1:0] rx_data_out,
 		output	logic			  rx_done,
-		output	logic			  rx_error
+		output	logic			  prx_error
 );
 
-localparam	IDLE    =	3'b000,	 
-			RX_START_BIT 	=	 3'b001,	
+localparam	IDLE    		=	3'b000,	 
+			RX_START_BIT 	=	3'b001,	
 			RX_DATA_BITS 	=	3'b010,
 			RX_PARITY	    =	3'b011,	 
 			RX_STOP_BIT1	=	3'b100,		
 			RX_STOP_BIT2	=	3'b101,
-			RX_DONE_STATE	= 3'b110;
+			RX_DONE_STATE	= 	3'b110;
 			
 logic		[2:0]	p_state, n_state;
 logic		[7:0]	parity_temp;
@@ -44,6 +44,8 @@ logic			Sec_Stop_Detected;
 logic			Stop_Bit2_To_Start;
 logic			done_two;
 logic 			parity_check;
+logic 			rx_error;
+logic			p_error;
 
 
 assign parity_enable      = parity[1];
@@ -53,17 +55,30 @@ assign parity_detected    = (p_state == RX_DATA_BITS && tick_count == 15 &&  (bi
 assign no_parity          = (p_state == RX_DATA_BITS && tick_count == 15 &&  (bit_count ==	frame_length - 1)  && ~parity_enable);
 assign start_bit_detected = (p_state == IDLE && RX_detect && ~RX);	
 assign Sec_Stop_Detected  = (p_state == RX_STOP_BIT1 && tick_count == 15  && stop_bit);
-assign Stop_Bit2_To_Start = (p_state == RX_STOP_BIT2 && tick_count == 15 && index_count < (`DATA_WIDTH)  && ~RX); 
+//assign Stop_Bit2_To_Start = (p_state == RX_STOP_BIT2 && tick_count == 15 && index_count < (`DATA_WIDTH-1)  && ~RX); 
+assign Stop_Bit2_To_Start = (p_state == RX_STOP_BIT2 && tick_count == 15 && index_count < (`DATA_WIDTH-1)  && ~RX); 
 assign done_two		  = (p_state == RX_STOP_BIT2 && tick_count == 15 && index_count >= (`DATA_WIDTH-1) );
 //assign  CTS_RX	=	( (p_state == IDLE) && (rts_cts_enable) && RX_detect)?(1'b1):(1'bx);		//( (current_state == IDLE) && (TX_detect) )
 
-
+assign prx_error = p_error;
 
 //------------------------------------State register------------------------------------
 always @(posedge rx_tick or negedge PRESETn)
 begin: state_mem
 	p_state <= (~PRESETn)?(IDLE):(n_state); 
 end: state_mem
+
+// Logic for receiver Error
+always @(posedge rx_tick or negedge PRESETn)
+begin: rcv_error_reg
+    if(~PRESETn || p_state == IDLE)
+        p_error <= 1'b0 ;
+    else if (rx_error)
+        p_error <= 1'b1;
+    else
+        p_error <= p_error;
+end: rcv_error_reg
+//-------------------------------------------------
 
 //------------------------------------Next State Comb Logic--------------------------
 always @(*)
@@ -121,20 +136,20 @@ begin
 			begin
 				{rx_done, rx_error, count_enable, parity_check, bit_enable, index_enable, stop_done, parity_clear  } = 1'b0;
 				rx_data_out		=	'dx;
-				index_cnt_oprtr		=	1;
+				index_cnt_oprtr	=	1;
 				bit_count_rst	=	1;
 			end
 		RX_START_BIT:
 			begin	
-				rx_done		=	1'b0;
-				rx_error	=	1'b0;
-				rx_data_out	=	'dx;
-				bit_count_rst		=	1;	
-				parity_check = 0;
+				rx_done			=	1'b0;
+				rx_error		=	1'b0;
+				rx_data_out		=	'dx;
+				bit_count_rst	=	1;	
+				parity_check 	= 0;
 				bit_enable		=	1'b0;
 				index_enable	=	1'b1;
 				stop_done		=	1'b0;	
-				index_cnt_oprtr		=	0;
+				index_cnt_oprtr	=	0;
 				parity_clear	=	1;
 			
 				if (tick_count  == 7)
@@ -163,16 +178,16 @@ begin
 	
 		RX_PARITY:
 			begin
-				rx_done		=	0;
+				rx_done			=	0;
 				parity_clear	=	0;				
-				rx_data_out	=	'dx;
-				bit_enable	=	0;
+				rx_data_out		=	'dx;
+				bit_enable		=	0;
 				bit_count_rst	=	1;
 				index_enable	=	0;
 				index_cnt_oprtr	=	0;
-				stop_done	=	0;
+				stop_done		=	0;
 
-					case (parity)	//check parity
+				case (parity)	//check parity
 					2'b10:
 						parity_check	=  ~^(parity_temp); 
 						
@@ -180,47 +195,49 @@ begin
 						parity_check	=  ^parity_temp; 
 					default:
 						parity_check	=	0;
-					endcase
+				endcase
 
 				if (tick_count  == 15 )	
 				begin
-					if (parity_check != RX )
-						rx_error		=	1'b1;
-					else
-						rx_error		=	1'b0;	//for parity check and overrun error
-						count_enable	=	0;
+					if (parity_check != RX ) begin //for parity check
+						rx_error	=	1'b1;
+					end
+					else begin  
+						rx_error	=	1'b0;
+					end	
+						count_enable=	0;
 				end
 				else
 				begin
 					count_enable	=	1;
-					rx_error			=	1'b0;
+					rx_error		=	1'b0;
 				end
 			end
 			
 		RX_STOP_BIT1:
 			begin
-				rx_done		=	0;
+				rx_done			=	0;
 				parity_clear	=	0;
 				index_cnt_oprtr	=	0;
-				rx_data_out	=	'dx;	
-				bit_enable	=	0;
+				rx_data_out		=	'dx;
+				bit_enable		=	0;
 				bit_count_rst	=	1;
 				index_enable	=	0;
-				rx_error	=	1'b0;
+				rx_error		=	1'b0;
 				parity_check	=	0;
 				
 				if (tick_count  == 15)
 				begin
 					count_enable	=	0;
-					stop_done	=	1;
-					
+					//stop_done		=	1;
+					stop_done		=	stop_bit ? 0 : 1;
 				end
 				else
 				begin
 					count_enable	=	1;
 					stop_done	=	0;
-					
 				end
+
 				if (tick_count  == 14) begin
                     if(RX != 1'b1) begin
                         rx_error = 1'b1;
@@ -233,9 +250,9 @@ begin
 		
 		RX_STOP_BIT2:
 			begin
-				rx_done		=	0;
+				rx_done			=	0;
 				rx_error		=	1'b0;
-				rx_data_out	=	'dx;	
+				rx_data_out		=	'dx;
 				parity_check = 0;				
 				bit_enable		=	0;
 				index_enable	=	0;
@@ -257,7 +274,8 @@ begin
 				if (tick_count  == 14) begin
                     if(RX != 1'b1) begin
                         rx_error = 1'b1;
-                    end else begin
+                    end 
+					else begin
                         rx_error = 1'b0;
                     end
 				end
@@ -268,7 +286,7 @@ begin
 						parity_clear	=	0;
 						rx_done			=	1;
 						rx_error		=	1'b0;
-						rx_data_out		= store_data;
+						rx_data_out		= 	store_data;
 						count_enable	=	0;
 						bit_enable		=	0;
 						index_enable	=	0;
@@ -292,7 +310,6 @@ begin
 			end			
 	endcase
 end
-
 
 //--------------------------------------Counters----------------------------------//
 always @ (posedge rx_tick)
