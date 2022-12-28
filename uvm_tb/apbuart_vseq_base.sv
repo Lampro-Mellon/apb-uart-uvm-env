@@ -115,9 +115,9 @@ endtask
 task apbuart_recreadreg_seq::body();
     rec_reg_test        apbuart_seq;
     super.body();
-    `uvm_info("apbuart_recdrv_seq", "Executing sequence", UVM_HIGH)
+    `uvm_info("apbuart_recreadreg_seq", "Executing sequence", UVM_HIGH)
     `uvm_do_on(apbuart_seq, apb_sqr)
-    `uvm_info("apbuart_recdrv_seq", "Sequence complete", UVM_HIGH)
+    `uvm_info("apbuart_recreadreg_seq", "Sequence complete", UVM_HIGH)
 endtask
 
 task apbuart_frameError_seq::body();
