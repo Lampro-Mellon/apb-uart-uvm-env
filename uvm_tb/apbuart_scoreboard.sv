@@ -32,9 +32,9 @@ class apbuart_scoreboard extends uvm_scoreboard;
   	//  port to recive packets from monitor first argument is transation type and 
   	//  other is defining which subscriber is attached
   	// ------------------------------------------------------------------------------
-    uvm_analysis_imp_monapb 	#(apb_transaction, apbuart_scoreboard)		item_collected_export_monapb;
-	uvm_analysis_imp_monuart 	#(uart_transaction, apbuart_scoreboard) 	item_collected_export_monuart;
-	uvm_analysis_imp_drvuart  	#(uart_transaction, apbuart_scoreboard) 	item_collected_export_drvuart;  
+	uvm_analysis_imp_monapb 	#(apb_transaction, apbuart_scoreboard)		item_collected_imp_monapb;
+	uvm_analysis_imp_monuart 	#(uart_transaction, apbuart_scoreboard) 	item_collected_imp_monuart;
+	uvm_analysis_imp_drvuart  	#(uart_transaction, apbuart_scoreboard) 	item_collected_imp_drvuart;  
 
   	//---------------------------------------
   	// new - constructor
@@ -61,9 +61,9 @@ function void apbuart_scoreboard::build_phase(uvm_phase phase);
 	super.build_phase(phase);
 	if(!uvm_config_db#(uart_config)::get(this, "", "cfg", cfg))
 		`uvm_fatal("No cfg",{"Configuration must be set for: ",get_full_name(),".cfg"});  
-  	item_collected_export_monapb 	= new("item_collected_export_monapb", this);
-	item_collected_export_monuart 	= new("item_collected_export_monuart", this);
-	item_collected_export_drvuart 	= new("item_collected_export_drvuart", this);  
+	item_collected_imp_monapb 	= new("item_collected_imp_monapb", this);
+	item_collected_imp_monuart 	= new("item_collected_imp_monuart", this);
+	item_collected_imp_drvuart 	= new("item_collected_imp_drvuart", this);  
 endfunction: build_phase
 
 // --------------------------------------------------
